@@ -647,6 +647,31 @@ document.getElementById('submitBtn').addEventListener('click', () => {
     ? `${formatTime(tStart)} – ${formatTime(tEnd)}`
     : formatTime(tStart);
 
+  // Build calendar quick-add links
+  const [yr, mo, dy] = date.split('-');
+  const [sh, sm] = tStart.split(':');
+  const startISO = `${yr}-${mo}-${dy}T${sh}:${sm}:00`;
+  const endISO   = tEnd ? `${yr}-${mo}-${dy}T${tEnd.replace(':','')}:00`.replace(/T(\d{2})(\d{2}):00/, 'T$1:$2:00') : startISO;
+
+  const evTitle    = `[PENDING] Room ${room} — ${name}`;
+  const evDetails  = `Requested by: ${name} (${email})${notes ? '%0ANotes: ' + notes : ''}`;
+  const evLocation = `Room ${room}, DPHSS`;
+
+  const outlookLink = `https://outlook.office.com/calendar/action/compose`
+    + `?subject=${encodeURIComponent(evTitle)}`
+    + `&body=${encodeURIComponent(`Requested by: ${name} (${email})${notes ? '\nNotes: ' + notes : ''}`)}`
+    + `&location=${encodeURIComponent(evLocation)}`
+    + `&startdt=${encodeURIComponent(startISO)}`
+    + `&enddt=${encodeURIComponent(endISO)}`;
+
+  const gcalStart  = `${yr}${mo}${dy}T${sh}${sm}00`;
+  const gcalEnd    = tEnd ? `${yr}${mo}${dy}T${tEnd.replace(':','')}00` : gcalStart;
+  const googleLink = `https://calendar.google.com/calendar/render?action=TEMPLATE`
+    + `&text=${encodeURIComponent(evTitle)}`
+    + `&dates=${gcalStart}/${gcalEnd}`
+    + `&details=${encodeURIComponent(`Requested by: ${name} (${email})${notes ? '\nNotes: ' + notes : ''}`)}`
+    + `&location=${encodeURIComponent(evLocation)}`;
+
   const body = [
     `Room Reservation Request`,
     `─────────────────────────`,
@@ -656,6 +681,13 @@ document.getElementById('submitBtn').addEventListener('click', () => {
     `Date:   ${formatDate(date)}`,
     `Time:   ${timeRange}`,
     notes ? `Notes:  ${notes}` : '',
+    ``,
+    `─────────────────────────`,
+    `ADD TO YOUR CALENDAR (click one):`,
+    ``,
+    `Outlook:          ${outlookLink}`,
+    ``,
+    `Google Calendar:  ${googleLink}`,
     ``,
     `─────────────────────────`,
     `Sent via DPHSS Room Calendars page`,
