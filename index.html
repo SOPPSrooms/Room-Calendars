@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Room Calendars — DPHSS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ical.js@1.5.0/build/ical.min.js"></script>
+
+<style>
+  :root {
+    --nu-red:    #C8102E;
+    --nu-black:  #0A0A0A;
+    --surface:   #FFFFFF;
+    --bg:        #F6F6F4;
+    --border:    #E2E2DF;
+    --text:      #1A1A1A;
+    --muted:     #6B6B6B;
+
+    --r225-color:  #C8102E;
+    --r226-color:  #1A6BB5;
+    --r226x-color: #2E7D52;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--nu-black);
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border-bottom: 3px solid var(--nu-red);
+  }
+
+  .logo-mark {
+    width: 36px; height: 36px;
+    background: var(--nu-red);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .logo-mark span {
+    font-family: 'DM Serif Display', serif;
+    color: white; font-size: 18px; line-height: 1;
+  }
+  .header-text h1 {
+    font-family: 'DM Serif Display', serif;
+    color: white; font-size: 20px; font-weight: 400;
+  }
+  .header-text p {
+    color: #999; font-size: 12px; margin-top: 2px;
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+
+  /* ── Main ── */
+  main { max-width: 1100px; margin: 0 auto; padding: 32px 24px 48px; }
+
+  /* ── Tabs ── */
+  .tab-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 0;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 0;
+  }
+
+  .tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    border: none;
+    background: transparent;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    border-radius: 6px 6px 0 0;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+  }
+
+  .tab-btn:hover { background: #f0f0ee; color: var(--text); }
+
+  .tab-btn.active { color: var(--text); font-weight: 600; }
+  .tab-btn[data-cal="R225"].active  { border-bottom-color: var(--r225-color); }
+  .tab-btn[data-cal="R226"].active  { border-bottom-color: var(--r226-color); }
+  .tab-btn[data-cal="R226X"].active { border-bottom-color: var(--r226x-color); }
+
+  .tab-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%; flex-shrink: 0;
+  }
+
+  /* loading badge on tab */
+  .tab-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 10px;
+    background: var(--border);
+    color: var(--muted);
+  }
+  .tab-badge.ready { background: #e6f4ec; color: #2E7D52; }
+  .tab-badge.error { background: #fdecea; color: #c0392b; }
+
+  /* ── Panels ── */
+  .tab-panel {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    padding: 24px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .tab-panel.active { display: block; }
+
+  /* ── Status row inside panel ── */
+  .panel-status {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--muted);
+    min-height: 24px; margin-bottom: 16px;
+  }
+  .spinner {
+    width: 13px; height: 13px;
+    border: 2px solid var(--border);
+    border-top-color: var(--nu-red);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  .error-notice {
+    background: #fff5f5; border: 1px solid #fcc;
+    border-radius: 6px; padding: 10px 14px;
+    font-size: 13px; color: #c0392b; margin-bottom: 16px;
+    display: none;
+  }
+
+  /* ── FullCalendar overrides ── */
+  .fc {
+    --fc-border-color: var(--border);
+    --fc-today-bg-color: #fffbf9;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 13.5px;
+  }
+  .fc .fc-toolbar-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 21px; font-weight: 400;
+  }
+  .fc .fc-button {
+    background: var(--nu-black) !important;
+    border: none !important; border-radius: 5px !important;
+    font-size: 12px !important; font-weight: 500 !important;
+    padding: 6px 12px !important; text-transform: capitalize !important;
+    box-shadow: none !important; letter-spacing: 0.02em;
+  }
+  .fc .fc-button:hover { background: #2a2a2a !important; }
+  .fc .fc-button-active { background: var(--nu-red) !important; }
+  .fc .fc-col-header-cell-cushion {
+    font-weight: 600; font-size: 12px;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--muted); text-decoration: none;
+  }
+  .fc .fc-daygrid-day-number {
+    font-size: 13px; color: var(--text); text-decoration: none; padding: 6px 8px;
+  }
+  .fc .fc-event {
+    border-radius: 4px !important; border: none !important;
+    font-size: 12px !important; font-weight: 500 !important;
+    padding: 2px 6px !important; cursor: default;
+  }
+  .fc .fc-more-link { font-size: 11px; font-weight: 600; color: var(--muted); }
+
+  /* ── Tooltip ── */
+  .event-tooltip {
+    position: fixed; z-index: 9999;
+    background: var(--nu-black); color: white;
+    padding: 10px 14px; border-radius: 8px;
+    font-size: 13px; max-width: 280px;
+    pointer-events: none; opacity: 0;
+    transition: opacity 0.15s;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    line-height: 1.5;
+  }
+  .event-tooltip.visible { opacity: 1; }
+  .tt-title { font-weight: 600; margin-bottom: 4px; }
+  .tt-row { font-size: 12px; color: #bbb; }
+  .tt-dot {
+    display: inline-block; width: 8px; height: 8px;
+    border-radius: 50%; margin-right: 6px; vertical-align: middle;
+  }
+
+  footer {
+    text-align: center; padding: 20px;
+    font-size: 12px; color: var(--muted);
+    border-top: 1px solid var(--border); margin-top: 32px;
+  }
+
+  @media (max-width: 640px) {
+    main { padding: 16px 12px 32px; }
+    .tab-panel { padding: 12px; }
+    .tab-btn { padding: 8px 14px; font-size: 13px; }
+    .fc .fc-toolbar { flex-wrap: wrap; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-mark"><span>N</span></div>
+  <div class="header-text">
+    <h1>Room Calendars</h1>
+    <p>Department of Pharmacy &amp; Health Systems Sciences</p>
+  </div>
+</header>
+
+<main>
+
+  <div class="tab-bar" role="tablist">
+    <button class="tab-btn active" data-cal="R225" role="tab" aria-selected="true" aria-controls="panel-R225">
+      <div class="tab-dot" style="background:var(--r225-color)"></div>
+      R225
+      <span class="tab-badge" id="badge-R225">Loading…</span>
+    </button>
+    <button class="tab-btn" data-cal="R226" role="tab" aria-selected="false" aria-controls="panel-R226">
+      <div class="tab-dot" style="background:var(--r226-color)"></div>
+      R226
+      <span class="tab-badge" id="badge-R226">Loading…</span>
+    </button>
+    <button class="tab-btn" data-cal="R226X" role="tab" aria-selected="false" aria-controls="panel-R226X">
+      <div class="tab-dot" style="background:var(--r226x-color)"></div>
+      R226X
+      <span class="tab-badge" id="badge-R226X">Loading…</span>
+    </button>
+  </div>
+
+  <!-- Panels -->
+  <div id="panel-R225"  class="tab-panel active" role="tabpanel">
+    <div class="panel-status" id="status-R225"><div class="spinner"></div> Loading R225…</div>
+    <div class="error-notice" id="error-R225"></div>
+    <div id="cal-R225"></div>
+  </div>
+
+  <div id="panel-R226"  class="tab-panel" role="tabpanel">
+    <div class="panel-status" id="status-R226"><div class="spinner"></div> Loading R226…</div>
+    <div class="error-notice" id="error-R226"></div>
+    <div id="cal-R226"></div>
+  </div>
+
+  <div id="panel-R226X" class="tab-panel" role="tabpanel">
+    <div class="panel-status" id="status-R226X"><div class="spinner"></div> Loading R226X…</div>
+    <div class="error-notice" id="error-R226X"></div>
+    <div id="cal-R226X"></div>
+  </div>
+
+</main>
+
+<footer>Events sourced from published Outlook calendars — Northeastern University</footer>
+
+<div class="event-tooltip" id="tooltip">
+  <div class="tt-title" id="tt-title"></div>
+  <div class="tt-row"  id="tt-cal"></div>
+  <div class="tt-row"  id="tt-time"></div>
+</div>
+
+<script>
+const CALENDARS = [
+  {
+    id:    'R225',
+    name:  'R225',
+    color: '#C8102E',
+    icsUrl: 'https://outlook.office365.com/owa/calendar/91b3877bcb4a45efaba3456a9e362854@northeastern.edu/bc3ceadade3840bc9225698bb0dc0bed10099528835448284109/calendar.ics'
+  },
+  {
+    id:    'R226',
+    name:  'R226',
+    color: '#1A6BB5',
+    icsUrl: 'https://outlook.office365.com/owa/calendar/91b3877bcb4a45efaba3456a9e362854@northeastern.edu/d0421559e0a941d885972bb5e3430b96755153526370512660/calendar.ics'
+  },
+  {
+    id:    'R226X',
+    name:  'R226X',
+    color: '#2E7D52',
+    icsUrl: 'https://outlook.office365.com/owa/calendar/91b3877bcb4a45efaba3456a9e362854@northeastern.edu/0e35e165c676484b8a4486cf5b5ad2129567709706197616216/calendar.ics'
+  }
+];
+
+function proxyUrl(url) {
+  return `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+}
+
+function parseICS(icsText, calName, calColor) {
+  const events = [];
+  try {
+    const jcal = ICAL.parse(icsText);
+    const comp  = new ICAL.Component(jcal);
+    comp.getAllSubcomponents('vevent').forEach(vevent => {
+      const ev = new ICAL.Event(vevent);
+      try {
+        const title = ev.summary || '(No title)';
+        const loc   = ev.location || '';
+        if (ev.isRecurring()) {
+          const iter  = ev.iterator();
+          const limit = new ICAL.Time();
+          limit.fromJSDate(new Date(Date.now() + 730 * 86400 * 1000));
+          let next, count = 0;
+          while ((next = iter.next()) && next.compare(limit) < 0 && count < 200) {
+            count++;
+            const end = next.clone(); end.addDuration(ev.duration);
+            events.push(makeEvent(title, next, end, calColor, loc));
+          }
+        } else {
+          events.push(makeEvent(title, ev.startDate, ev.endDate, calColor, loc));
+        }
+      } catch(e) {}
+    });
+  } catch(e) { console.warn('ICS parse error', calName, e); }
+  return events;
+}
+
+function makeEvent(title, icalStart, icalEnd, color, loc) {
+  return {
+    title,
+    start:           icalStart.toJSDate(),
+    end:             icalEnd.toJSDate(),
+    allDay:          icalStart.isDate,
+    backgroundColor: color,
+    borderColor:     color,
+    textColor:       '#ffffff',
+    extendedProps:   { loc }
+  };
+}
+
+function fmtTime(d, allDay) {
+  if (allDay) return 'All day';
+  return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+}
+
+const tooltip  = document.getElementById('tooltip');
+const ttTitle  = document.getElementById('tt-title');
+const ttCal    = document.getElementById('tt-cal');
+const ttTime   = document.getElementById('tt-time');
+
+function makeCalendar(cal) {
+  const fc = new FullCalendar.Calendar(document.getElementById(`cal-${cal.id}`), {
+    initialView: 'dayGridMonth',
+    headerToolbar: {
+      left:   'prev,next today',
+      center: 'title',
+      right:  'dayGridMonth,timeGridWeek,listMonth'
+    },
+    buttonText: { today: 'Today', month: 'Month', week: 'Week', list: 'List' },
+    height:        'auto',
+    dayMaxEvents:  4,
+    nowIndicator:  true,
+    eventMouseEnter(info) {
+      ttTitle.textContent = info.event.title;
+      ttCal.innerHTML = `<span class="tt-dot" style="background:${cal.color}"></span>${cal.name}`;
+      const start = info.event.start, end = info.event.end, allDay = info.event.allDay;
+      let t = fmtTime(start, allDay);
+      if (!allDay && end) t += ' – ' + fmtTime(end, false);
+      if (info.event.extendedProps.loc) t += ` · ${info.event.extendedProps.loc}`;
+      ttTime.textContent = t;
+      tooltip.classList.add('visible');
+    },
+    eventMouseLeave() { tooltip.classList.remove('visible'); },
+    eventDidMount(info) {
+      info.el.addEventListener('mousemove', e => {
+        tooltip.style.left = (e.clientX + 14) + 'px';
+        tooltip.style.top  = (e.clientY - 10) + 'px';
+      });
+    }
+  });
+  fc.render();
+  return fc;
+}
+
+async function loadCalendar(cal, fc) {
+  const statusEl = document.getElementById(`status-${cal.id}`);
+  const badgeEl  = document.getElementById(`badge-${cal.id}`);
+  const errorEl  = document.getElementById(`error-${cal.id}`);
+
+  try {
+    const res = await fetch(proxyUrl(cal.icsUrl));
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text   = await res.text();
+    const events = parseICS(text, cal.name, cal.color);
+    events.forEach(ev => fc.addEvent(ev));
+
+    statusEl.innerHTML = `<div class="status-dot" style="background:#2E7D52"></div> ${events.length} event${events.length !== 1 ? 's' : ''} loaded`;
+    badgeEl.textContent = events.length;
+    badgeEl.classList.add('ready');
+  } catch(err) {
+    console.error(cal.name, err);
+    statusEl.innerHTML = `<div class="status-dot" style="background:#c0392b"></div> Could not load calendar`;
+    badgeEl.textContent = 'Error';
+    badgeEl.classList.add('error');
+    errorEl.style.display = 'block';
+    errorEl.textContent = `Could not fetch ${cal.name}. This may be a temporary network issue or the ICS link may have changed. Try refreshing the page.`;
+  }
+}
+
+// ── Tab switching ────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const target = btn.dataset.cal;
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      b.classList.remove('active');
+      b.setAttribute('aria-selected', 'false');
+    });
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    btn.setAttribute('aria-selected', 'true');
+    document.getElementById(`panel-${target}`).classList.add('active');
+
+    // FullCalendar needs a size update when a hidden panel becomes visible
+    const fc = calendarInstances[target];
+    if (fc) fc.updateSize();
+  });
+});
+
+// ── Boot ─────────────────────────────────────────────────────
+const calendarInstances = {};
+document.addEventListener('DOMContentLoaded', () => {
+  CALENDARS.forEach(cal => {
+    const fc = makeCalendar(cal);
+    calendarInstances[cal.id] = fc;
+    loadCalendar(cal, fc);
+  });
+});
+</script>
+</body>
+</html>
