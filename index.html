@@ -338,7 +338,7 @@
   <div class="logo-mark"><span>N</span></div>
   <div class="header-text">
     <h1>Room Calendars</h1>
-    <p>Department of Pharmacy &amp; Health Systems Sciences</p>
+    <p>School of Pharmacy and Pharmaceutical Sciences</p>
   </div>
 </header>
 
@@ -449,6 +449,11 @@
         </div>
 
         <button class="submit-btn" id="submitBtn" type="button">Send Request →</button>
+
+        <p style="font-size:12px; color:var(--muted); margin-top:14px; line-height:1.6; text-align:center;">
+          Questions, concerns, or special requests?<br>
+          Email <a href="mailto:sopps-rooms@northeastern.edu" style="color:var(--nu-red); text-decoration:none; font-weight:500;">sopps-rooms@northeastern.edu</a>
+        </p>
 
       </div><!-- /reservationForm -->
 
@@ -761,14 +766,18 @@ function parsePartialTime(str) {
   return h * 60 + m;
 }
 
+// Time range: 8:00 AM (480 mins) to 6:00 PM (1080 mins), inclusive
+const TIME_MIN_MINS = 8 * 60;   // 480
+const TIME_MAX_MINS = 18 * 60;  // 1080
+
 function buildTimePicker(inputId, dropdownId) {
   const input = document.getElementById(inputId);
   const dd    = document.getElementById(dropdownId);
   let highlightedIndex = -1;
   let allOptions = [];
 
-  // Populate all 15-min slots
-  for (let mins = 0; mins < 24 * 60; mins += 15) {
+  // Populate 30-min slots from 8:00 AM to 6:00 PM
+  for (let mins = TIME_MIN_MINS; mins <= TIME_MAX_MINS; mins += 30) {
     const label = minsToDisplay(mins);
     const opt = document.createElement('div');
     opt.className = 'time-option';
@@ -809,10 +818,9 @@ function buildTimePicker(inputId, dropdownId) {
     const q   = raw.toLowerCase().replace(/[\s:]/g, '');
 
     if (!raw) {
-      // No input: show all options, scroll to 8 AM
+      // No input: show all options, scroll to top (8 AM)
       allOptions.forEach(o => o.style.display = '');
-      const eight = allOptions.find(o => parseInt(o.dataset.mins) === 8 * 60);
-      if (eight) eight.scrollIntoView({ block: 'start' });
+      if (allOptions.length > 0) allOptions[0].scrollIntoView({ block: 'start' });
     } else {
       // Filter to matching options
       const partialMins = parsePartialTime(raw);
@@ -914,7 +922,7 @@ document.getElementById('submitBtn').addEventListener('click', () => {
 
   const evTitle    = `[PENDING] Room ${room} — ${name}`;
   const evDetails  = `Requested by: ${name} (${email})${notes ? '%0ANotes: ' + notes : ''}`;
-  const evLocation = `Room ${room}, DPHSS`;
+  const evLocation = `Room ${room}, SOPPS`;
 
   const outlookLink = `https://outlook.office.com/owa/sopps-rooms@northeastern.edu/?path=/calendar/action/compose`
     + `&subject=${encodeURIComponent(evTitle)}`
@@ -953,7 +961,7 @@ document.getElementById('submitBtn').addEventListener('click', () => {
     `Google Calendar:  ${googleLink}`,
     ``,
     `─────────────────────────`,
-    `Sent via DPHSS Room Calendars page`,
+    `Sent via SOPPS Room Calendars page`,
   ].filter(l => l !== null).join('\n');
 
   const mailto = `mailto:${RECIPIENT}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}&cc=${encodeURIComponent(email)}`;
