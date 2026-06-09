@@ -854,6 +854,10 @@ document.getElementById('submitBtn').addEventListener('click', () => {
   const body = [
     `Room Reservation Request`,
     `─────────────────────────`,
+    `STARTDT:${startISO}`,
+    `ENDDT:${endISO}`,
+    `ROOM:${room}`,
+    `─────────────────────────`,
     `Name:   ${name}`,
     `Email:  ${email}`,
     `Room:   ${room}`,
@@ -868,11 +872,6 @@ document.getElementById('submitBtn').addEventListener('click', () => {
     ``,
     `Google Calendar:  ${googleLink}`,
     ``,
-    `─────────────────────────`,
-    `POWER AUTOMATE DATA (do not edit)`,
-    `STARTDT:${startISO}`,
-    `ENDDT:${endISO}`,
-    `ROOM:${room}`,
     `─────────────────────────`,
     `Sent via DPHSS Room Calendars page`,
   ].filter(l => l !== null).join('\n');
