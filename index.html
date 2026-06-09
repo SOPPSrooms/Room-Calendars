@@ -378,24 +378,27 @@
           <div class="field-error" id="err-room">Please select a room.</div>
         </div>
 
+        <div class="field">
+          <label for="f-date">Date</label>
+          <input type="date" id="f-date">
+          <div class="field-error" id="err-date">Please select a date.</div>
+        </div>
+
         <div class="field field-row">
           <div>
-            <label for="f-date">Date</label>
-            <input type="date" id="f-date">
-            <div class="field-error" id="err-date">Please select a date.</div>
+            <label for="f-time-start">Start time</label>
+            <input type="text" id="f-time-start" list="time-options" placeholder="9:00 AM" autocomplete="off">
+            <div class="field-error" id="err-time">Please set a start time.</div>
           </div>
           <div>
-            <label for="f-time-start">Start time</label>
-            <input type="time" id="f-time-start">
-            <div class="field-error" id="err-time">Please set a start time.</div>
+            <label for="f-time-end">End time</label>
+            <input type="text" id="f-time-end" list="time-options" placeholder="10:00 AM" autocomplete="off">
+            <div class="field-error" id="err-time-end">End time must be after start.</div>
           </div>
         </div>
 
-        <div class="field">
-          <label for="f-time-end">End time</label>
-          <input type="time" id="f-time-end">
-          <div class="field-error" id="err-time-end">End time must be after start time.</div>
-        </div>
+        <!-- 15-min increment time options, populated by JS -->
+        <datalist id="time-options"></datalist>
 
         <div class="field">
           <label for="f-notes">Notes <span class="optional">(optional)</span></label>
@@ -604,13 +607,14 @@ function validateForm() {
   if (!date) valid = false;
 
   const tStart = getVal('f-time-start');
-  showError('err-time', !tStart);
-  if (!tStart) valid = false;
+  const tStartMins = parseTimeMins(tStart);
+  showError('err-time', tStartMins === null);
+  if (tStartMins === null) valid = false;
 
   const tEnd = getVal('f-time-end');
-  const timeEndOk = tEnd && (!tStart || tEnd > tStart);
-  showError('err-time-end', !!tEnd && tStart && tEnd <= tStart);
-  if (tEnd && tStart && tEnd <= tStart) valid = false;
+  const tEndMins = parseTimeMins(tEnd);
+  showError('err-time-end', tEnd !== '' && (tEndMins === null || (tStartMins !== null && tEndMins <= tStartMins)));
+  if (tEnd !== '' && (tEndMins === null || (tStartMins !== null && tEndMins <= tStartMins))) valid = false;
 
   return valid;
 }
@@ -622,13 +626,69 @@ function formatDate(dateStr) {
   return `${months[parseInt(m)-1]} ${parseInt(d)}, ${y}`;
 }
 
+// Parse "9:00 AM" / "9:00 am" / "9:00" / "900" → minutes since midnight, or null if invalid
+function parseTimeMins(str) {
+  if (!str) return null;
+  str = str.trim();
+  // Try HH:MM AM/PM
+  let m = str.match(/^(\d{1,2}):(\d{2})\s*(am|pm)?$/i);
+  if (m) {
+    let h = parseInt(m[1]), min = parseInt(m[2]);
+    const ampm = (m[3] || '').toLowerCase();
+    if (ampm === 'pm' && h !== 12) h += 12;
+    if (ampm === 'am' && h === 12) h = 0;
+    if (h < 0 || h > 23 || min < 0 || min > 59) return null;
+    return h * 60 + min;
+  }
+  // Try HHmm (e.g. "0900")
+  m = str.match(/^(\d{3,4})$/);
+  if (m) {
+    const padded = m[1].padStart(4, '0');
+    const h = parseInt(padded.slice(0,2)), min = parseInt(padded.slice(2));
+    if (h < 0 || h > 23 || min < 0 || min > 59) return null;
+    return h * 60 + min;
+  }
+  return null;
+}
+
+// Convert minutes-since-midnight → "9:00 AM"
+function minsToDisplay(mins) {
+  const h24 = Math.floor(mins / 60);
+  const m   = mins % 60;
+  const ampm = h24 >= 12 ? 'PM' : 'AM';
+  const h12  = h24 % 12 || 12;
+  return `${h12}:${String(m).padStart(2,'0')} ${ampm}`;
+}
+
+// Convert display string → "HH:MM" 24h for ISO links
 function formatTime(timeStr) {
   if (!timeStr) return '';
-  const [h, m] = timeStr.split(':').map(Number);
+  const mins = parseTimeMins(timeStr);
+  if (mins === null) return timeStr; // pass through if unparseable
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  // Return display format
   const ampm = h >= 12 ? 'PM' : 'AM';
   const h12  = h % 12 || 12;
   return `${h12}:${String(m).padStart(2,'0')} ${ampm}`;
 }
+
+// Convert display string → "HH:MM" 24h (for ISO calendar links)
+function toHHMM(timeStr) {
+  const mins = parseTimeMins(timeStr);
+  if (mins === null) return '00:00';
+  return `${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;
+}
+
+// Populate datalist with 15-min increments
+(function populateTimeOptions() {
+  const dl = document.getElementById('time-options');
+  for (let mins = 0; mins < 24 * 60; mins += 15) {
+    const opt = document.createElement('option');
+    opt.value = minsToDisplay(mins);
+    dl.appendChild(opt);
+  }
+})();
 
 document.getElementById('submitBtn').addEventListener('click', () => {
   if (!validateForm()) return;
@@ -649,9 +709,10 @@ document.getElementById('submitBtn').addEventListener('click', () => {
 
   // Build calendar quick-add links
   const [yr, mo, dy] = date.split('-');
-  const [sh, sm] = tStart.split(':');
-  const startISO = `${yr}-${mo}-${dy}T${sh}:${sm}:00`;
-  const endISO   = tEnd ? `${yr}-${mo}-${dy}T${tEnd.replace(':','')}:00`.replace(/T(\d{2})(\d{2}):00/, 'T$1:$2:00') : startISO;
+  const startHHMM = toHHMM(tStart);
+  const endHHMM   = tEnd ? toHHMM(tEnd) : startHHMM;
+  const startISO  = `${yr}-${mo}-${dy}T${startHHMM}:00`;
+  const endISO    = `${yr}-${mo}-${dy}T${endHHMM}:00`;
 
   const evTitle    = `[PENDING] Room ${room} — ${name}`;
   const evDetails  = `Requested by: ${name} (${email})${notes ? '%0ANotes: ' + notes : ''}`;
@@ -664,8 +725,8 @@ document.getElementById('submitBtn').addEventListener('click', () => {
     + `&startdt=${encodeURIComponent(startISO)}`
     + `&enddt=${encodeURIComponent(endISO)}`;
 
-  const gcalStart  = `${yr}${mo}${dy}T${sh}${sm}00`;
-  const gcalEnd    = tEnd ? `${yr}${mo}${dy}T${tEnd.replace(':','')}00` : gcalStart;
+  const gcalStart  = `${yr}${mo}${dy}T${startHHMM.replace(':','')}00`;
+  const gcalEnd    = `${yr}${mo}${dy}T${endHHMM.replace(':','')}00`;
   const googleLink = `https://calendar.google.com/calendar/render?action=TEMPLATE`
     + `&text=${encodeURIComponent(evTitle)}`
     + `&dates=${gcalStart}/${gcalEnd}`
