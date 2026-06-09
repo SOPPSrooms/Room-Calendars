@@ -290,6 +290,49 @@
     .fc .fc-toolbar { flex-wrap: wrap; gap: 8px; }
     .field-row { grid-template-columns: 1fr; }
   }
+
+  /* ── Custom time picker ── */
+  .time-picker-wrap {
+    position: relative;
+  }
+  .time-input {
+    width: 100%; padding: 8px 30px 8px 11px;
+    border: 1.5px solid var(--border); border-radius: 6px;
+    font-family: 'Inter', sans-serif; font-size: 13px; color: var(--text);
+    background: var(--surface); outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    cursor: pointer;
+  }
+  .time-input:focus {
+    border-color: var(--nu-red);
+    box-shadow: 0 0 0 3px rgba(200,16,46,0.1);
+  }
+  .time-input.error { border-color: #e74c3c; }
+  .time-picker-wrap::after {
+    content: '▾';
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+    color: var(--muted); pointer-events: none; font-size: 11px;
+  }
+  .time-dropdown {
+    display: none;
+    position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+    background: var(--surface);
+    border: 1.5px solid var(--border); border-radius: 6px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    max-height: 200px; overflow-y: auto;
+    z-index: 1000;
+    scrollbar-width: thin;
+  }
+  .time-dropdown.open { display: block; }
+  .time-option {
+    padding: 8px 12px;
+    font-size: 13px; color: var(--text);
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .time-option:hover { background: #f5f5f3; }
+  .time-option.selected { background: #fff0f2; color: var(--nu-red); font-weight: 600; }
+
 </style>
 </head>
 <body>
@@ -386,19 +429,22 @@
 
         <div class="field field-row">
           <div>
-            <label for="f-time-start">Start time</label>
-            <input type="text" id="f-time-start" list="time-options" placeholder="9:00 AM" autocomplete="off">
+            <label>Start time</label>
+            <div class="time-picker-wrap" id="wrap-time-start">
+              <input type="text" id="f-time-start" class="time-input" placeholder="9:00 AM" autocomplete="off" spellcheck="false">
+              <div class="time-dropdown" id="dd-time-start"></div>
+            </div>
             <div class="field-error" id="err-time">Please set a start time.</div>
           </div>
           <div>
-            <label for="f-time-end">End time</label>
-            <input type="text" id="f-time-end" list="time-options" placeholder="10:00 AM" autocomplete="off">
+            <label>End time</label>
+            <div class="time-picker-wrap" id="wrap-time-end">
+              <input type="text" id="f-time-end" class="time-input" placeholder="10:00 AM" autocomplete="off" spellcheck="false">
+              <div class="time-dropdown" id="dd-time-end"></div>
+            </div>
             <div class="field-error" id="err-time-end">End time must be after start.</div>
           </div>
         </div>
-
-        <!-- 15-min increment time options, populated by JS -->
-        <datalist id="time-options"></datalist>
 
         <div class="field">
           <label for="f-notes">Notes <span class="optional">(optional)</span></label>
@@ -680,15 +726,87 @@ function toHHMM(timeStr) {
   return `${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;
 }
 
-// Populate datalist with 15-min increments
-(function populateTimeOptions() {
-  const dl = document.getElementById('time-options');
+// ── Custom time picker setup ──────────────────────────────────
+function buildTimePicker(inputId, dropdownId) {
+  const input = document.getElementById(inputId);
+  const dd    = document.getElementById(dropdownId);
+
+  // Populate dropdown with 15-min slots
   for (let mins = 0; mins < 24 * 60; mins += 15) {
-    const opt = document.createElement('option');
-    opt.value = minsToDisplay(mins);
-    dl.appendChild(opt);
+    const label = minsToDisplay(mins);
+    const opt = document.createElement('div');
+    opt.className = 'time-option';
+    opt.textContent = label;
+    opt.dataset.mins = mins;
+    opt.addEventListener('mousedown', e => {
+      e.preventDefault(); // prevent input blur before click registers
+      input.value = label;
+      closeDropdown();
+      input.dispatchEvent(new Event('change'));
+    });
+    dd.appendChild(opt);
   }
-})();
+
+  function openDropdown() {
+    dd.classList.add('open');
+    // scroll selected option into view
+    const selected = dd.querySelector('.selected');
+    if (selected) selected.scrollIntoView({ block: 'nearest' });
+    else dd.scrollTop = 0;
+  }
+
+  function closeDropdown() {
+    dd.classList.remove('open');
+  }
+
+  function highlightMatch() {
+    const val = input.value.trim();
+    const mins = parseTimeMins(val);
+    dd.querySelectorAll('.time-option').forEach(opt => {
+      opt.classList.toggle('selected', parseInt(opt.dataset.mins) === mins);
+    });
+  }
+
+  function filterOptions() {
+    const q = input.value.toLowerCase().replace(/\s/g, '');
+    dd.querySelectorAll('.time-option').forEach(opt => {
+      const match = opt.textContent.toLowerCase().replace(/\s/g, '').includes(q);
+      opt.style.display = match ? '' : 'none';
+    });
+  }
+
+  input.addEventListener('focus', () => {
+    filterOptions();
+    highlightMatch();
+    openDropdown();
+  });
+
+  input.addEventListener('input', () => {
+    filterOptions();
+    highlightMatch();
+    openDropdown();
+  });
+
+  input.addEventListener('blur', () => {
+    setTimeout(closeDropdown, 150);
+    // Restore all options visibility
+    dd.querySelectorAll('.time-option').forEach(opt => opt.style.display = '');
+  });
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeDropdown(); input.blur(); }
+    if (e.key === 'Enter') {
+      const visible = [...dd.querySelectorAll('.time-option')].filter(o => o.style.display !== 'none');
+      if (visible.length > 0) {
+        input.value = visible[0].textContent;
+        closeDropdown();
+      }
+    }
+  });
+}
+
+buildTimePicker('f-time-start', 'dd-time-start');
+buildTimePicker('f-time-end',   'dd-time-end');
 
 document.getElementById('submitBtn').addEventListener('click', () => {
   if (!validateForm()) return;
