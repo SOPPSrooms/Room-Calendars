@@ -19,7 +19,6 @@
     --border:    #E2E2DF;
     --text:      #1A1A1A;
     --muted:     #6B6B6B;
-
     --r225-color:  #C8102E;
     --r226-color:  #1A6BB5;
     --r226x-color: #2E7D52;
@@ -43,94 +42,66 @@
     gap: 16px;
     border-bottom: 3px solid var(--nu-red);
   }
-
   .logo-mark {
     width: 36px; height: 36px;
-    background: var(--nu-red);
-    border-radius: 4px;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
+    background: var(--nu-red); border-radius: 4px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
-  .logo-mark span {
-    font-family: 'DM Serif Display', serif;
-    color: white; font-size: 18px; line-height: 1;
-  }
-  .header-text h1 {
-    font-family: 'DM Serif Display', serif;
-    color: white; font-size: 20px; font-weight: 400;
-  }
-  .header-text p {
-    color: #999; font-size: 12px; margin-top: 2px;
-    letter-spacing: 0.04em; text-transform: uppercase;
+  .logo-mark span { font-family: 'DM Serif Display', serif; color: white; font-size: 18px; line-height: 1; }
+  .header-text h1 { font-family: 'DM Serif Display', serif; color: white; font-size: 20px; font-weight: 400; }
+  .header-text p  { color: #999; font-size: 12px; margin-top: 2px; letter-spacing: 0.04em; text-transform: uppercase; }
+
+  /* ── Page layout: calendar + sidebar ── */
+  .page-body {
+    max-width: 1340px;
+    margin: 0 auto;
+    padding: 32px 24px 48px;
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 28px;
+    align-items: start;
   }
 
-  /* ── Main ── */
-  main { max-width: 1100px; margin: 0 auto; padding: 32px 24px 48px; }
+  /* ── Calendar column ── */
+  .calendar-col { min-width: 0; }
 
   /* ── Tabs ── */
   .tab-bar {
-    display: flex;
-    gap: 6px;
-    margin-bottom: 0;
+    display: flex; gap: 6px;
     border-bottom: 2px solid var(--border);
-    padding-bottom: 0;
   }
-
   .tab-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    display: flex; align-items: center; gap: 8px;
     padding: 10px 22px;
-    border: none;
-    background: transparent;
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--muted);
-    cursor: pointer;
-    border-bottom: 3px solid transparent;
-    margin-bottom: -2px;
+    border: none; background: transparent;
+    font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500;
+    color: var(--muted); cursor: pointer;
+    border-bottom: 3px solid transparent; margin-bottom: -2px;
     border-radius: 6px 6px 0 0;
     transition: color 0.15s, border-color 0.15s, background 0.15s;
   }
-
   .tab-btn:hover { background: #f0f0ee; color: var(--text); }
-
   .tab-btn.active { color: var(--text); font-weight: 600; }
   .tab-btn[data-cal="R225"].active  { border-bottom-color: var(--r225-color); }
   .tab-btn[data-cal="R226"].active  { border-bottom-color: var(--r226-color); }
   .tab-btn[data-cal="R226X"].active { border-bottom-color: var(--r226x-color); }
-
-  .tab-dot {
-    width: 10px; height: 10px;
-    border-radius: 50%; flex-shrink: 0;
-  }
-
-  /* loading badge on tab */
+  .tab-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
   .tab-badge {
-    font-size: 10px;
-    font-weight: 600;
-    padding: 1px 6px;
-    border-radius: 10px;
-    background: var(--border);
-    color: var(--muted);
+    font-size: 10px; font-weight: 600; padding: 1px 6px;
+    border-radius: 10px; background: var(--border); color: var(--muted);
   }
   .tab-badge.ready { background: #e6f4ec; color: #2E7D52; }
   .tab-badge.error { background: #fdecea; color: #c0392b; }
 
-  /* ── Panels ── */
+  /* ── Calendar panels ── */
   .tab-panel {
     display: none;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-top: none;
-    border-radius: 0 0 10px 10px;
-    padding: 24px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    background: var(--surface); border: 1px solid var(--border);
+    border-top: none; border-radius: 0 0 10px 10px;
+    padding: 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
   }
   .tab-panel.active { display: block; }
 
-  /* ── Status row inside panel ── */
   .panel-status {
     display: flex; align-items: center; gap: 8px;
     font-size: 13px; color: var(--muted);
@@ -138,54 +109,40 @@
   }
   .spinner {
     width: 13px; height: 13px;
-    border: 2px solid var(--border);
-    border-top-color: var(--nu-red);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    flex-shrink: 0;
+    border: 2px solid var(--border); border-top-color: var(--nu-red);
+    border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
   .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-
   .error-notice {
-    background: #fff5f5; border: 1px solid #fcc;
-    border-radius: 6px; padding: 10px 14px;
-    font-size: 13px; color: #c0392b; margin-bottom: 16px;
-    display: none;
+    background: #fff5f5; border: 1px solid #fcc; border-radius: 6px;
+    padding: 10px 14px; font-size: 13px; color: #c0392b; margin-bottom: 16px; display: none;
   }
 
   /* ── FullCalendar overrides ── */
   .fc {
     --fc-border-color: var(--border);
     --fc-today-bg-color: #fffbf9;
-    font-family: 'Inter', system-ui, sans-serif;
-    font-size: 13.5px;
+    font-family: 'Inter', system-ui, sans-serif; font-size: 13px;
   }
-  .fc .fc-toolbar-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: 21px; font-weight: 400;
-  }
+  .fc .fc-toolbar-title { font-family: 'DM Serif Display', serif; font-size: 20px; font-weight: 400; }
   .fc .fc-button {
-    background: var(--nu-black) !important;
-    border: none !important; border-radius: 5px !important;
-    font-size: 12px !important; font-weight: 500 !important;
-    padding: 6px 12px !important; text-transform: capitalize !important;
+    background: var(--nu-black) !important; border: none !important;
+    border-radius: 5px !important; font-size: 11px !important; font-weight: 500 !important;
+    padding: 5px 10px !important; text-transform: capitalize !important;
     box-shadow: none !important; letter-spacing: 0.02em;
   }
   .fc .fc-button:hover { background: #2a2a2a !important; }
   .fc .fc-button-active { background: var(--nu-red) !important; }
   .fc .fc-col-header-cell-cushion {
-    font-weight: 600; font-size: 12px;
-    text-transform: uppercase; letter-spacing: 0.05em;
-    color: var(--muted); text-decoration: none;
+    font-weight: 600; font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.05em; color: var(--muted); text-decoration: none;
   }
-  .fc .fc-daygrid-day-number {
-    font-size: 13px; color: var(--text); text-decoration: none; padding: 6px 8px;
-  }
+  .fc .fc-daygrid-day-number { font-size: 12px; color: var(--text); text-decoration: none; padding: 5px 7px; }
   .fc .fc-event {
     border-radius: 4px !important; border: none !important;
-    font-size: 12px !important; font-weight: 500 !important;
-    padding: 2px 6px !important; cursor: default;
+    font-size: 11px !important; font-weight: 500 !important;
+    padding: 2px 5px !important; cursor: default;
   }
   .fc .fc-more-link { font-size: 11px; font-weight: 600; color: var(--muted); }
 
@@ -194,31 +151,144 @@
     position: fixed; z-index: 9999;
     background: var(--nu-black); color: white;
     padding: 10px 14px; border-radius: 8px;
-    font-size: 13px; max-width: 280px;
+    font-size: 13px; max-width: 260px;
     pointer-events: none; opacity: 0;
     transition: opacity 0.15s;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
-    line-height: 1.5;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25); line-height: 1.5;
   }
   .event-tooltip.visible { opacity: 1; }
   .tt-title { font-weight: 600; margin-bottom: 4px; }
   .tt-row { font-size: 12px; color: #bbb; }
-  .tt-dot {
-    display: inline-block; width: 8px; height: 8px;
-    border-radius: 50%; margin-right: 6px; vertical-align: middle;
+  .tt-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+
+  /* ── Reservation sidebar ── */
+  .sidebar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    overflow: hidden;
+    position: sticky;
+    top: 24px;
   }
 
+  .sidebar-header {
+    background: var(--nu-black);
+    padding: 16px 20px;
+  }
+  .sidebar-header h2 {
+    font-family: 'DM Serif Display', serif;
+    color: white; font-size: 17px; font-weight: 400;
+  }
+  .sidebar-header p {
+    color: #999; font-size: 11px; margin-top: 3px; line-height: 1.4;
+  }
+
+  .sidebar-body { padding: 20px; }
+
+  .field { margin-bottom: 16px; }
+  .field label {
+    display: block; font-size: 12px; font-weight: 600;
+    color: var(--text); margin-bottom: 5px; letter-spacing: 0.02em;
+  }
+  .field label .optional {
+    font-weight: 400; color: var(--muted); margin-left: 4px;
+  }
+
+  .field input,
+  .field select,
+  .field textarea {
+    width: 100%; padding: 8px 11px;
+    border: 1.5px solid var(--border); border-radius: 6px;
+    font-family: 'Inter', sans-serif; font-size: 13px; color: var(--text);
+    background: var(--surface);
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none;
+    appearance: none;
+  }
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus {
+    border-color: var(--nu-red);
+    box-shadow: 0 0 0 3px rgba(200,16,46,0.1);
+  }
+  .field input.error,
+  .field select.error { border-color: #e74c3c; }
+
+  .field textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* Room select with color dot */
+  .room-select-wrap { position: relative; }
+  .room-select-wrap::after {
+    content: '▾';
+    position: absolute; right: 11px; top: 50%; transform: translateY(-50%);
+    color: var(--muted); pointer-events: none; font-size: 12px;
+  }
+  .room-select-wrap select { padding-right: 28px; cursor: pointer; }
+
+  .field-hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  /* Submit button */
+  .submit-btn {
+    width: 100%; padding: 10px;
+    background: var(--nu-red); color: white;
+    border: none; border-radius: 6px;
+    font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600;
+    cursor: pointer; letter-spacing: 0.01em;
+    transition: background 0.15s, transform 0.1s;
+    margin-top: 4px;
+  }
+  .submit-btn:hover { background: #a50d25; }
+  .submit-btn:active { transform: scale(0.98); }
+
+  /* Success state */
+  .form-success {
+    display: none;
+    text-align: center;
+    padding: 24px 20px;
+  }
+  .success-icon {
+    width: 48px; height: 48px;
+    background: #e6f4ec; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 14px;
+    font-size: 22px;
+  }
+  .form-success h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 17px; font-weight: 400; margin-bottom: 8px;
+  }
+  .form-success p { font-size: 13px; color: var(--muted); line-height: 1.5; }
+  .form-success .another-btn {
+    margin-top: 16px; font-size: 13px; font-weight: 500;
+    color: var(--nu-red); background: none; border: none;
+    cursor: pointer; text-decoration: underline; text-underline-offset: 2px;
+  }
+
+  /* Validation message */
+  .field-error { font-size: 11px; color: #e74c3c; margin-top: 4px; display: none; }
+  .field-error.visible { display: block; }
+
+  /* ── Footer ── */
   footer {
     text-align: center; padding: 20px;
     font-size: 12px; color: var(--muted);
-    border-top: 1px solid var(--border); margin-top: 32px;
+    border-top: 1px solid var(--border); margin-top: 8px;
   }
 
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .page-body { grid-template-columns: 1fr; }
+    .sidebar { position: static; }
+  }
   @media (max-width: 640px) {
-    main { padding: 16px 12px 32px; }
+    .page-body { padding: 16px 12px 32px; }
     .tab-panel { padding: 12px; }
-    .tab-btn { padding: 8px 14px; font-size: 13px; }
+    .tab-btn { padding: 8px 12px; font-size: 13px; }
     .fc .fc-toolbar { flex-wrap: wrap; gap: 8px; }
+    .field-row { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -232,46 +302,122 @@
   </div>
 </header>
 
-<main>
+<div class="page-body">
 
-  <div class="tab-bar" role="tablist">
-    <button class="tab-btn active" data-cal="R225" role="tab" aria-selected="true" aria-controls="panel-R225">
-      <div class="tab-dot" style="background:var(--r225-color)"></div>
-      R225
-      <span class="tab-badge" id="badge-R225">Loading…</span>
-    </button>
-    <button class="tab-btn" data-cal="R226" role="tab" aria-selected="false" aria-controls="panel-R226">
-      <div class="tab-dot" style="background:var(--r226-color)"></div>
-      R226
-      <span class="tab-badge" id="badge-R226">Loading…</span>
-    </button>
-    <button class="tab-btn" data-cal="R226X" role="tab" aria-selected="false" aria-controls="panel-R226X">
-      <div class="tab-dot" style="background:var(--r226x-color)"></div>
-      R226X
-      <span class="tab-badge" id="badge-R226X">Loading…</span>
-    </button>
-  </div>
+  <!-- ── Left: Calendars ── -->
+  <div class="calendar-col">
 
-  <!-- Panels -->
-  <div id="panel-R225"  class="tab-panel active" role="tabpanel">
-    <div class="panel-status" id="status-R225"><div class="spinner"></div> Loading R225…</div>
-    <div class="error-notice" id="error-R225"></div>
-    <div id="cal-R225"></div>
-  </div>
+    <div class="tab-bar" role="tablist">
+      <button class="tab-btn active" data-cal="R225" role="tab" aria-selected="true" aria-controls="panel-R225">
+        <div class="tab-dot" style="background:var(--r225-color)"></div>
+        R225 <span class="tab-badge" id="badge-R225">Loading…</span>
+      </button>
+      <button class="tab-btn" data-cal="R226" role="tab" aria-selected="false" aria-controls="panel-R226">
+        <div class="tab-dot" style="background:var(--r226-color)"></div>
+        R226 <span class="tab-badge" id="badge-R226">Loading…</span>
+      </button>
+      <button class="tab-btn" data-cal="R226X" role="tab" aria-selected="false" aria-controls="panel-R226X">
+        <div class="tab-dot" style="background:var(--r226x-color)"></div>
+        R226X <span class="tab-badge" id="badge-R226X">Loading…</span>
+      </button>
+    </div>
 
-  <div id="panel-R226"  class="tab-panel" role="tabpanel">
-    <div class="panel-status" id="status-R226"><div class="spinner"></div> Loading R226…</div>
-    <div class="error-notice" id="error-R226"></div>
-    <div id="cal-R226"></div>
-  </div>
+    <div id="panel-R225" class="tab-panel active" role="tabpanel">
+      <div class="panel-status" id="status-R225"><div class="spinner"></div> Loading R225…</div>
+      <div class="error-notice" id="error-R225"></div>
+      <div id="cal-R225"></div>
+    </div>
+    <div id="panel-R226" class="tab-panel" role="tabpanel">
+      <div class="panel-status" id="status-R226"><div class="spinner"></div> Loading R226…</div>
+      <div class="error-notice" id="error-R226"></div>
+      <div id="cal-R226"></div>
+    </div>
+    <div id="panel-R226X" class="tab-panel" role="tabpanel">
+      <div class="panel-status" id="status-R226X"><div class="spinner"></div> Loading R226X…</div>
+      <div class="error-notice" id="error-R226X"></div>
+      <div id="cal-R226X"></div>
+    </div>
 
-  <div id="panel-R226X" class="tab-panel" role="tabpanel">
-    <div class="panel-status" id="status-R226X"><div class="spinner"></div> Loading R226X…</div>
-    <div class="error-notice" id="error-R226X"></div>
-    <div id="cal-R226X"></div>
-  </div>
+  </div><!-- /calendar-col -->
 
-</main>
+  <!-- ── Right: Reservation form ── -->
+  <aside class="sidebar" aria-label="Room reservation request">
+
+    <div class="sidebar-header">
+      <h2>Request a Room</h2>
+      <p>Submitting will open your email client with the request pre-filled.</p>
+    </div>
+
+    <div class="sidebar-body">
+
+      <!-- Form -->
+      <div id="reservationForm">
+
+        <div class="field">
+          <label for="f-name">Your name</label>
+          <input type="text" id="f-name" placeholder="Jane Smith" autocomplete="name">
+          <div class="field-error" id="err-name">Please enter your name.</div>
+        </div>
+
+        <div class="field">
+          <label for="f-email">Your email</label>
+          <input type="email" id="f-email" placeholder="j.smith@northeastern.edu" autocomplete="email">
+          <div class="field-error" id="err-email">Please enter a valid email address.</div>
+        </div>
+
+        <div class="field">
+          <label for="f-room">Room</label>
+          <div class="room-select-wrap">
+            <select id="f-room">
+              <option value="">Select a room…</option>
+              <option value="R225">R225</option>
+              <option value="R226">R226</option>
+              <option value="R226X">R226X</option>
+            </select>
+          </div>
+          <div class="field-error" id="err-room">Please select a room.</div>
+        </div>
+
+        <div class="field field-row">
+          <div>
+            <label for="f-date">Date</label>
+            <input type="date" id="f-date">
+            <div class="field-error" id="err-date">Please select a date.</div>
+          </div>
+          <div>
+            <label for="f-time-start">Start time</label>
+            <input type="time" id="f-time-start">
+            <div class="field-error" id="err-time">Please set a start time.</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="f-time-end">End time</label>
+          <input type="time" id="f-time-end">
+          <div class="field-error" id="err-time-end">End time must be after start time.</div>
+        </div>
+
+        <div class="field">
+          <label for="f-notes">Notes <span class="optional">(optional)</span></label>
+          <textarea id="f-notes" placeholder="Purpose, number of attendees, any special requirements…"></textarea>
+        </div>
+
+        <button class="submit-btn" id="submitBtn" type="button">Send Request →</button>
+
+      </div><!-- /reservationForm -->
+
+      <!-- Success state -->
+      <div class="form-success" id="formSuccess">
+        <div class="success-icon">✓</div>
+        <h3>Request ready to send</h3>
+        <p>Your email client has opened with the request pre-filled. Just hit Send to submit it to the SOPPS rooms team.</p>
+        <button class="another-btn" id="anotherBtn">Submit another request</button>
+      </div>
+
+    </div><!-- /sidebar-body -->
+  </aside>
+
+</div><!-- /page-body -->
 
 <footer>Events sourced from published Outlook calendars — Northeastern University</footer>
 
@@ -282,43 +428,49 @@
 </div>
 
 <script>
+// ── Calendar config ───────────────────────────────────────────
 const CALENDARS = [
-  {
-    id:    'R225',
-    name:  'R225',
-    color: '#C8102E',
-    icsUrl: 'https://outlook.office365.com/owa/calendar/91b3877bcb4a45efaba3456a9e362854@northeastern.edu/bc3ceadade3840bc9225698bb0dc0bed10099528835448284109/calendar.ics'
-  },
-  {
-    id:    'R226',
-    name:  'R226',
-    color: '#1A6BB5',
-    icsUrl: 'https://outlook.office365.com/owa/calendar/91b3877bcb4a45efaba3456a9e362854@northeastern.edu/d0421559e0a941d885972bb5e3430b96755153526370512660/calendar.ics'
-  },
-  {
-    id:    'R226X',
-    name:  'R226X',
-    color: '#2E7D52',
-    icsUrl: 'https://outlook.office365.com/owa/calendar/91b3877bcb4a45efaba3456a9e362854@northeastern.edu/0e35e165c676484b8a4486cf5b5ad2129567709706197616216/calendar.ics'
-  }
+  { id: 'R225',  name: 'R225',  color: '#C8102E',
+    icsUrl: 'https://outlook.office365.com/owa/calendar/91b3877bcb4a45efaba3456a9e362854@northeastern.edu/bc3ceadade3840bc9225698bb0dc0bed10099528835448284109/calendar.ics' },
+  { id: 'R226',  name: 'R226',  color: '#1A6BB5',
+    icsUrl: 'https://outlook.office365.com/owa/calendar/91b3877bcb4a45efaba3456a9e362854@northeastern.edu/d0421559e0a941d885972bb5e3430b96755153526370512660/calendar.ics' },
+  { id: 'R226X', name: 'R226X', color: '#2E7D52',
+    icsUrl: 'https://outlook.office365.com/owa/calendar/91b3877bcb4a45efaba3456a9e362854@northeastern.edu/0e35e165c676484b8a4486cf5b5ad2129567709706197616216/calendar.ics' }
 ];
 
-function proxyUrl(url) {
-  return `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+// ── CORS proxy fallback ───────────────────────────────────────
+const PROXIES = [
+  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  url => `https://cors-anywhere.herokuapp.com/${url}`,
+];
+
+async function fetchWithFallback(url) {
+  let lastErr;
+  for (const proxy of PROXIES) {
+    try {
+      const res = await fetch(proxy(url), { signal: AbortSignal.timeout(10000) });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const text = await res.text();
+      if (!text.includes('BEGIN:VCALENDAR')) throw new Error('Not a valid ICS file');
+      return text;
+    } catch(e) { lastErr = e; }
+  }
+  throw lastErr;
 }
 
-function parseICS(icsText, calName, calColor) {
+// ── ICS parsing ───────────────────────────────────────────────
+function parseICS(icsText, calColor) {
   const events = [];
   try {
-    const jcal = ICAL.parse(icsText);
-    const comp  = new ICAL.Component(jcal);
+    const comp = new ICAL.Component(ICAL.parse(icsText));
     comp.getAllSubcomponents('vevent').forEach(vevent => {
       const ev = new ICAL.Event(vevent);
       try {
         const title = ev.summary || '(No title)';
         const loc   = ev.location || '';
         if (ev.isRecurring()) {
-          const iter  = ev.iterator();
+          const iter = ev.iterator();
           const limit = new ICAL.Time();
           limit.fromJSDate(new Date(Date.now() + 730 * 86400 * 1000));
           let next, count = 0;
@@ -332,20 +484,15 @@ function parseICS(icsText, calName, calColor) {
         }
       } catch(e) {}
     });
-  } catch(e) { console.warn('ICS parse error', calName, e); }
+  } catch(e) { console.warn('ICS parse error', e); }
   return events;
 }
 
-function makeEvent(title, icalStart, icalEnd, color, loc) {
+function makeEvent(title, s, e, color, loc) {
   return {
-    title,
-    start:           icalStart.toJSDate(),
-    end:             icalEnd.toJSDate(),
-    allDay:          icalStart.isDate,
-    backgroundColor: color,
-    borderColor:     color,
-    textColor:       '#ffffff',
-    extendedProps:   { loc }
+    title, start: s.toJSDate(), end: e.toJSDate(), allDay: s.isDate,
+    backgroundColor: color, borderColor: color, textColor: '#fff',
+    extendedProps: { loc }
   };
 }
 
@@ -354,29 +501,25 @@ function fmtTime(d, allDay) {
   return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 }
 
-const tooltip  = document.getElementById('tooltip');
-const ttTitle  = document.getElementById('tt-title');
-const ttCal    = document.getElementById('tt-cal');
-const ttTime   = document.getElementById('tt-time');
+// ── Tooltip ───────────────────────────────────────────────────
+const tooltip = document.getElementById('tooltip');
+const ttTitle = document.getElementById('tt-title');
+const ttCal   = document.getElementById('tt-cal');
+const ttTime  = document.getElementById('tt-time');
 
+// ── Build each FullCalendar instance ─────────────────────────
 function makeCalendar(cal) {
   const fc = new FullCalendar.Calendar(document.getElementById(`cal-${cal.id}`), {
     initialView: 'dayGridMonth',
-    headerToolbar: {
-      left:   'prev,next today',
-      center: 'title',
-      right:  'dayGridMonth,timeGridWeek,listMonth'
-    },
+    headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,listMonth' },
     buttonText: { today: 'Today', month: 'Month', week: 'Week', list: 'List' },
-    height:        'auto',
-    dayMaxEvents:  4,
-    nowIndicator:  true,
+    height: 'auto', dayMaxEvents: 4, nowIndicator: true,
     eventMouseEnter(info) {
       ttTitle.textContent = info.event.title;
       ttCal.innerHTML = `<span class="tt-dot" style="background:${cal.color}"></span>${cal.name}`;
-      const start = info.event.start, end = info.event.end, allDay = info.event.allDay;
-      let t = fmtTime(start, allDay);
-      if (!allDay && end) t += ' – ' + fmtTime(end, false);
+      const s = info.event.start, e = info.event.end, a = info.event.allDay;
+      let t = fmtTime(s, a);
+      if (!a && e) t += ' – ' + fmtTime(e, false);
       if (info.event.extendedProps.loc) t += ` · ${info.event.extendedProps.loc}`;
       ttTime.textContent = t;
       tooltip.classList.add('visible');
@@ -397,48 +540,147 @@ async function loadCalendar(cal, fc) {
   const statusEl = document.getElementById(`status-${cal.id}`);
   const badgeEl  = document.getElementById(`badge-${cal.id}`);
   const errorEl  = document.getElementById(`error-${cal.id}`);
-
   try {
-    const res = await fetch(proxyUrl(cal.icsUrl));
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const text   = await res.text();
-    const events = parseICS(text, cal.name, cal.color);
+    const events = parseICS(await fetchWithFallback(cal.icsUrl), cal.color);
     events.forEach(ev => fc.addEvent(ev));
-
     statusEl.innerHTML = `<div class="status-dot" style="background:#2E7D52"></div> ${events.length} event${events.length !== 1 ? 's' : ''} loaded`;
     badgeEl.textContent = events.length;
     badgeEl.classList.add('ready');
   } catch(err) {
-    console.error(cal.name, err);
     statusEl.innerHTML = `<div class="status-dot" style="background:#c0392b"></div> Could not load calendar`;
-    badgeEl.textContent = 'Error';
-    badgeEl.classList.add('error');
+    badgeEl.textContent = 'Error'; badgeEl.classList.add('error');
     errorEl.style.display = 'block';
-    errorEl.textContent = `Could not fetch ${cal.name}. This may be a temporary network issue or the ICS link may have changed. Try refreshing the page.`;
+    errorEl.textContent = `Could not fetch ${cal.name} after trying multiple sources. Try refreshing, or check that the ICS URL is still published in Outlook.`;
   }
 }
 
-// ── Tab switching ────────────────────────────────────────────
+// ── Tab switching ─────────────────────────────────────────────
+const calendarInstances = {};
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     const target = btn.dataset.cal;
-    document.querySelectorAll('.tab-btn').forEach(b => {
-      b.classList.remove('active');
-      b.setAttribute('aria-selected', 'false');
-    });
+    document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    btn.setAttribute('aria-selected', 'true');
+    btn.classList.add('active'); btn.setAttribute('aria-selected','true');
     document.getElementById(`panel-${target}`).classList.add('active');
-
-    // FullCalendar needs a size update when a hidden panel becomes visible
     const fc = calendarInstances[target];
     if (fc) fc.updateSize();
+
+    // Pre-select the active tab's room in the form
+    document.getElementById('f-room').value = target;
   });
 });
 
-// ── Boot ─────────────────────────────────────────────────────
-const calendarInstances = {};
+// ── Reservation form ──────────────────────────────────────────
+const RECIPIENT = 'sopps-rooms@northeastern.edu';
+
+function getVal(id) { return document.getElementById(id).value.trim(); }
+
+function showError(id, show) {
+  const el = document.getElementById(id);
+  el.classList.toggle('visible', show);
+  const input = document.getElementById(id.replace('err-','f-'));
+  if (input) input.classList.toggle('error', show);
+}
+
+function validateForm() {
+  let valid = true;
+
+  const name = getVal('f-name');
+  showError('err-name', !name);
+  if (!name) valid = false;
+
+  const email = getVal('f-email');
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  showError('err-email', !emailOk);
+  if (!emailOk) valid = false;
+
+  const room = getVal('f-room');
+  showError('err-room', !room);
+  if (!room) valid = false;
+
+  const date = getVal('f-date');
+  showError('err-date', !date);
+  if (!date) valid = false;
+
+  const tStart = getVal('f-time-start');
+  showError('err-time', !tStart);
+  if (!tStart) valid = false;
+
+  const tEnd = getVal('f-time-end');
+  const timeEndOk = tEnd && (!tStart || tEnd > tStart);
+  showError('err-time-end', !!tEnd && tStart && tEnd <= tStart);
+  if (tEnd && tStart && tEnd <= tStart) valid = false;
+
+  return valid;
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const [y, m, d] = dateStr.split('-');
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${months[parseInt(m)-1]} ${parseInt(d)}, ${y}`;
+}
+
+function formatTime(timeStr) {
+  if (!timeStr) return '';
+  const [h, m] = timeStr.split(':').map(Number);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12  = h % 12 || 12;
+  return `${h12}:${String(m).padStart(2,'0')} ${ampm}`;
+}
+
+document.getElementById('submitBtn').addEventListener('click', () => {
+  if (!validateForm()) return;
+
+  const name   = getVal('f-name');
+  const email  = getVal('f-email');
+  const room   = getVal('f-room');
+  const date   = getVal('f-date');
+  const tStart = getVal('f-time-start');
+  const tEnd   = getVal('f-time-end');
+  const notes  = getVal('f-notes');
+
+  const subject = `Room Reservation Request — ${room} on ${formatDate(date)}`;
+
+  const timeRange = tEnd
+    ? `${formatTime(tStart)} – ${formatTime(tEnd)}`
+    : formatTime(tStart);
+
+  const body = [
+    `Room Reservation Request`,
+    `─────────────────────────`,
+    `Name:   ${name}`,
+    `Email:  ${email}`,
+    `Room:   ${room}`,
+    `Date:   ${formatDate(date)}`,
+    `Time:   ${timeRange}`,
+    notes ? `Notes:  ${notes}` : '',
+    ``,
+    `─────────────────────────`,
+    `Sent via DPHSS Room Calendars page`,
+  ].filter(l => l !== null).join('\n');
+
+  const mailto = `mailto:${RECIPIENT}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}&cc=${encodeURIComponent(email)}`;
+  window.location.href = mailto;
+
+  // Show success state
+  document.getElementById('reservationForm').style.display = 'none';
+  document.getElementById('formSuccess').style.display = 'block';
+});
+
+document.getElementById('anotherBtn').addEventListener('click', () => {
+  document.getElementById('reservationForm').style.display = 'block';
+  document.getElementById('formSuccess').style.display = 'none';
+  // Clear form
+  ['f-name','f-email','f-time-start','f-time-end','f-notes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-date').value = '';
+});
+
+// Pre-fill date to today
+document.getElementById('f-date').valueAsDate = new Date();
+
+// ── Boot ──────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   CALENDARS.forEach(cal => {
     const fc = makeCalendar(cal);
