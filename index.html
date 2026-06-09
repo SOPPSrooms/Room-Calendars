@@ -836,8 +836,8 @@ document.getElementById('submitBtn').addEventListener('click', () => {
   const evDetails  = `Requested by: ${name} (${email})${notes ? '%0ANotes: ' + notes : ''}`;
   const evLocation = `Room ${room}, DPHSS`;
 
-  const outlookLink = `https://outlook.office.com/calendar/action/compose`
-    + `?subject=${encodeURIComponent(evTitle)}`
+  const outlookLink = `https://outlook.office.com/owa/sopps-rooms@northeastern.edu/?path=/calendar/action/compose`
+    + `&subject=${encodeURIComponent(evTitle)}`
     + `&body=${encodeURIComponent(`Requested by: ${name} (${email})${notes ? '\nNotes: ' + notes : ''}`)}`
     + `&location=${encodeURIComponent(evLocation)}`
     + `&startdt=${encodeURIComponent(startISO)}`
