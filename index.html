@@ -292,46 +292,41 @@
   }
 
   /* ── Custom time picker ── */
-  .time-picker-wrap {
-    position: relative;
-  }
+  .time-picker-wrap { position: relative; }
   .time-input {
-    width: 100%; padding: 8px 30px 8px 11px;
+    width: 100%; padding: 8px 11px;
     border: 1.5px solid var(--border); border-radius: 6px;
     font-family: 'Inter', sans-serif; font-size: 13px; color: var(--text);
     background: var(--surface); outline: none;
     transition: border-color 0.15s, box-shadow 0.15s;
-    cursor: pointer;
+    cursor: text;
   }
   .time-input:focus {
     border-color: var(--nu-red);
     box-shadow: 0 0 0 3px rgba(200,16,46,0.1);
   }
   .time-input.error { border-color: #e74c3c; }
-  .time-picker-wrap::after {
-    content: '▾';
-    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
-    color: var(--muted); pointer-events: none; font-size: 11px;
-  }
   .time-dropdown {
     display: none;
     position: absolute; top: calc(100% + 4px); left: 0; right: 0;
     background: var(--surface);
     border: 1.5px solid var(--border); border-radius: 6px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-    max-height: 200px; overflow-y: auto;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    max-height: 180px; overflow-y: auto;
     z-index: 1000;
     scrollbar-width: thin;
   }
   .time-dropdown.open { display: block; }
   .time-option {
-    padding: 8px 12px;
+    padding: 7px 12px;
     font-size: 13px; color: var(--text);
     cursor: pointer;
     transition: background 0.1s;
   }
-  .time-option:hover { background: #f5f5f3; }
-  .time-option.selected { background: #fff0f2; color: var(--nu-red); font-weight: 600; }
+  .time-option:hover, .time-option.highlighted { background: #f5f5f3; }
+  .time-option.selected {
+    background: #fff0f2; color: var(--nu-red); font-weight: 600;
+  }
 
 </style>
 </head>
@@ -727,11 +722,50 @@ function toHHMM(timeStr) {
 }
 
 // ── Custom time picker setup ──────────────────────────────────
+// Smartly parse partial typed input like "9", "930", "1030", "9a", "10p"
+function parsePartialTime(str) {
+  if (!str) return null;
+  str = str.trim().toLowerCase().replace(/\s/g, '');
+
+  // Extract am/pm hint if present
+  let ampm = null;
+  if (str.endsWith('am') || str.endsWith('a')) { ampm = 'am'; str = str.replace(/a(m)?$/, ''); }
+  else if (str.endsWith('pm') || str.endsWith('p')) { ampm = 'pm'; str = str.replace(/p(m)?$/, ''); }
+
+  // Strip colon
+  str = str.replace(':', '');
+
+  let h, m;
+  if (str.length <= 2) {
+    h = parseInt(str); m = 0;
+  } else if (str.length === 3) {
+    h = parseInt(str[0]); m = parseInt(str.slice(1));
+  } else if (str.length === 4) {
+    h = parseInt(str.slice(0, 2)); m = parseInt(str.slice(2));
+  } else {
+    return null;
+  }
+
+  if (isNaN(h) || isNaN(m) || m > 59) return null;
+
+  // Apply am/pm
+  if (ampm === 'pm' && h !== 12) h += 12;
+  if (ampm === 'am' && h === 12) h = 0;
+
+  // If no am/pm and hour is 1-8, assume PM (business hours default)
+  if (ampm === null && h >= 1 && h <= 8) h += 12;
+
+  if (h > 23) return null;
+  return h * 60 + m;
+}
+
 function buildTimePicker(inputId, dropdownId) {
   const input = document.getElementById(inputId);
   const dd    = document.getElementById(dropdownId);
+  let highlightedIndex = -1;
+  let allOptions = [];
 
-  // Populate dropdown with 15-min slots
+  // Populate all 15-min slots
   for (let mins = 0; mins < 24 * 60; mins += 15) {
     const label = minsToDisplay(mins);
     const opt = document.createElement('div');
@@ -739,69 +773,110 @@ function buildTimePicker(inputId, dropdownId) {
     opt.textContent = label;
     opt.dataset.mins = mins;
     opt.addEventListener('mousedown', e => {
-      e.preventDefault(); // prevent input blur before click registers
-      input.value = label;
-      closeDropdown();
-      input.dispatchEvent(new Event('change'));
+      e.preventDefault();
+      selectOption(opt);
     });
     dd.appendChild(opt);
+    allOptions.push(opt);
+  }
+
+  function selectOption(opt) {
+    input.value = opt.textContent;
+    allOptions.forEach(o => o.classList.remove('selected'));
+    opt.classList.add('selected');
+    closeDropdown();
+    input.dispatchEvent(new Event('change'));
+  }
+
+  function getVisible() {
+    return allOptions.filter(o => o.style.display !== 'none');
   }
 
   function openDropdown() {
     dd.classList.add('open');
-    // scroll selected option into view
-    const selected = dd.querySelector('.selected');
-    if (selected) selected.scrollIntoView({ block: 'nearest' });
-    else dd.scrollTop = 0;
   }
 
   function closeDropdown() {
     dd.classList.remove('open');
+    highlightedIndex = -1;
+    allOptions.forEach(o => o.classList.remove('highlighted'));
   }
 
-  function highlightMatch() {
-    const val = input.value.trim();
-    const mins = parseTimeMins(val);
-    dd.querySelectorAll('.time-option').forEach(opt => {
-      opt.classList.toggle('selected', parseInt(opt.dataset.mins) === mins);
-    });
-  }
+  function filterAndScroll() {
+    const raw = input.value.trim();
+    const q   = raw.toLowerCase().replace(/[\s:]/g, '');
 
-  function filterOptions() {
-    const q = input.value.toLowerCase().replace(/\s/g, '');
-    dd.querySelectorAll('.time-option').forEach(opt => {
-      const match = opt.textContent.toLowerCase().replace(/\s/g, '').includes(q);
-      opt.style.display = match ? '' : 'none';
+    if (!raw) {
+      // No input: show all options, scroll to 8 AM
+      allOptions.forEach(o => o.style.display = '');
+      const eight = allOptions.find(o => parseInt(o.dataset.mins) === 8 * 60);
+      if (eight) eight.scrollIntoView({ block: 'start' });
+    } else {
+      // Filter to matching options
+      const partialMins = parsePartialTime(raw);
+      allOptions.forEach(opt => {
+        const label = opt.textContent.toLowerCase().replace(/[\s:]/g, '');
+        const mins  = parseInt(opt.dataset.mins);
+        // Show if label contains query, or if it's the exact parsed match
+        const show  = label.includes(q) || (partialMins !== null && mins === partialMins);
+        opt.style.display = show ? '' : 'none';
+      });
+
+      // Scroll to best match
+      const best = allOptions.find(o => o.style.display !== 'none');
+      if (best) best.scrollIntoView({ block: 'nearest' });
+    }
+
+    // Mark selected
+    const currentMins = parseTimeMins(raw);
+    allOptions.forEach(o => {
+      o.classList.toggle('selected', currentMins !== null && parseInt(o.dataset.mins) === currentMins);
     });
+
+    highlightedIndex = -1;
+    allOptions.forEach(o => o.classList.remove('highlighted'));
   }
 
   input.addEventListener('focus', () => {
-    filterOptions();
-    highlightMatch();
+    input.select();
+    filterAndScroll();
     openDropdown();
   });
 
   input.addEventListener('input', () => {
-    filterOptions();
-    highlightMatch();
+    filterAndScroll();
     openDropdown();
   });
 
   input.addEventListener('blur', () => {
-    setTimeout(closeDropdown, 150);
-    // Restore all options visibility
-    dd.querySelectorAll('.time-option').forEach(opt => opt.style.display = '');
+    setTimeout(() => {
+      closeDropdown();
+      allOptions.forEach(o => o.style.display = '');
+    }, 160);
   });
 
   input.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { closeDropdown(); input.blur(); }
-    if (e.key === 'Enter') {
-      const visible = [...dd.querySelectorAll('.time-option')].filter(o => o.style.display !== 'none');
-      if (visible.length > 0) {
-        input.value = visible[0].textContent;
-        closeDropdown();
+    const visible = getVisible();
+    if (e.key === 'Escape') { closeDropdown(); input.blur(); return; }
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      highlightedIndex = Math.min(highlightedIndex + 1, visible.length - 1);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      highlightedIndex = Math.max(highlightedIndex - 1, 0);
+    } else if (e.key === 'Enter' || e.key === 'Tab') {
+      if (highlightedIndex >= 0 && visible[highlightedIndex]) {
+        e.preventDefault();
+        selectOption(visible[highlightedIndex]);
+      } else if (visible.length > 0) {
+        e.preventDefault();
+        selectOption(visible[0]);
       }
+      return;
     }
+    // Update highlight
+    visible.forEach((o, i) => o.classList.toggle('highlighted', i === highlightedIndex));
+    if (visible[highlightedIndex]) visible[highlightedIndex].scrollIntoView({ block: 'nearest' });
   });
 }
 
