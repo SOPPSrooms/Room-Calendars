@@ -293,19 +293,21 @@
 
   /* ── Custom time picker ── */
   .time-picker-wrap { position: relative; }
-  .time-input {
+  /* Higher specificity to override .field input rules */
+  .field .time-picker-wrap input.time-input {
     width: 100%; padding: 8px 11px;
     border: 1.5px solid var(--border); border-radius: 6px;
     font-family: 'Inter', sans-serif; font-size: 13px; color: var(--text);
     background: var(--surface); outline: none;
+    appearance: auto;
     transition: border-color 0.15s, box-shadow 0.15s;
     cursor: text;
   }
-  .time-input:focus {
+  .field .time-picker-wrap input.time-input:focus {
     border-color: var(--nu-red);
     box-shadow: 0 0 0 3px rgba(200,16,46,0.1);
   }
-  .time-input.error { border-color: #e74c3c; }
+  .field .time-picker-wrap input.time-input.error { border-color: #e74c3c; }
   .time-dropdown {
     display: none;
     position: absolute; top: calc(100% + 4px); left: 0; right: 0;
@@ -880,8 +882,11 @@ function buildTimePicker(inputId, dropdownId) {
   });
 }
 
-buildTimePicker('f-time-start', 'dd-time-start');
-buildTimePicker('f-time-end',   'dd-time-end');
+// ── Boot ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  buildTimePicker('f-time-start', 'dd-time-start');
+  buildTimePicker('f-time-end',   'dd-time-end');
+});
 
 document.getElementById('submitBtn').addEventListener('click', () => {
   if (!validateForm()) return;
@@ -967,11 +972,11 @@ document.getElementById('anotherBtn').addEventListener('click', () => {
   document.getElementById('f-date').value = '';
 });
 
-// Pre-fill date to today
-document.getElementById('f-date').valueAsDate = new Date();
-
 // ── Boot ──────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  // Pre-fill date to today
+  document.getElementById('f-date').valueAsDate = new Date();
+
   CALENDARS.forEach(cal => {
     const fc = makeCalendar(cal);
     calendarInstances[cal.id] = fc;
