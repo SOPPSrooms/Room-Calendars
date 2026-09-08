@@ -329,6 +329,22 @@
   .time-option.selected {
     background: #fff0f2; color: var(--nu-red); font-weight: 600;
   }
+  .sync-warning {
+    display: none;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 13px;
+    line-height: 1.45;
+    margin-bottom: 12px;
+    border: 1px solid;
+  }
+  .sync-warning.warn {
+    background: #fff8e6; border-color: #f0d48a; color: #8a6100;
+  }
+  .sync-warning.stale {
+    background: #fff5f5; border-color: #fcc; color: #c0392b;
+  }
+  .sync-warning strong { font-weight: 600; }
 
 </style>
 </head>
@@ -346,6 +362,10 @@
 
   <!-- ── Left: Calendars ── -->
   <div class="calendar-col">
+
+    <div id="syncWarning" class="sync-warning" role="status"></div>
+
+    <div id="syncStatus" style="font-size:11px;color:var(--muted);margin-bottom:8px;letter-spacing:0.02em;"></div>
 
     <div class="tab-bar" role="tablist">
       <button class="tab-btn active" data-cal="R225" role="tab" aria-selected="true" aria-controls="panel-R225">
@@ -480,34 +500,23 @@
 
 <script>
 // ── Calendar config ───────────────────────────────────────────
+// ICS files are fetched server-side by a scheduled GitHub Action
+// (see .github/workflows/fetch-calendars.yml) and committed to /data.
+// The page just reads these local, same-origin files — no CORS, no proxies.
 const CALENDARS = [
-  { id: 'R225',  name: 'R225',  color: '#C8102E',
-    icsUrl: 'https://outlook.office365.com/owa/calendar/91b3877bcb4a45efaba3456a9e362854@northeastern.edu/bc3ceadade3840bc9225698bb0dc0bed10099528835448284109/calendar.ics' },
-  { id: 'R226',  name: 'R226',  color: '#1A6BB5',
-    icsUrl: 'https://outlook.office365.com/owa/calendar/91b3877bcb4a45efaba3456a9e362854@northeastern.edu/d0421559e0a941d885972bb5e3430b96755153526370512660/calendar.ics' },
-  { id: 'R226X', name: 'R226X', color: '#2E7D52',
-    icsUrl: 'https://outlook.office365.com/owa/calendar/91b3877bcb4a45efaba3456a9e362854@northeastern.edu/0e35e165c676484b8a4486cf5b5ad2129567709706197616216/calendar.ics' }
+  { id: 'R225',  name: 'R225',  color: '#C8102E',  icsFile: 'data/r225.ics' },
+  { id: 'R226',  name: 'R226',  color: '#1A6BB5',  icsFile: 'data/r226.ics' },
+  { id: 'R226X', name: 'R226X', color: '#2E7D52',  icsFile: 'data/r226x.ics' }
 ];
 
-// ── CORS proxy fallback ───────────────────────────────────────
-const PROXIES = [
-  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-  url => `https://cors-anywhere.herokuapp.com/${url}`,
-];
-
-async function fetchWithFallback(url) {
-  let lastErr;
-  for (const proxy of PROXIES) {
-    try {
-      const res = await fetch(proxy(url), { signal: AbortSignal.timeout(10000) });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const text = await res.text();
-      if (!text.includes('BEGIN:VCALENDAR')) throw new Error('Not a valid ICS file');
-      return text;
-    } catch(e) { lastErr = e; }
-  }
-  throw lastErr;
+// ── Local ICS fetch (same-origin, no CORS) ────────────────────
+async function fetchLocalICS(path) {
+  // Cache-bust so browsers/CDN don't serve a stale copy between syncs
+  const res = await fetch(`${path}?t=${Date.now()}`, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const text = await res.text();
+  if (!text.includes('BEGIN:VCALENDAR')) throw new Error('Not a valid ICS file');
+  return text;
 }
 
 // ── ICS parsing ───────────────────────────────────────────────
@@ -592,7 +601,7 @@ async function loadCalendar(cal, fc) {
   const badgeEl  = document.getElementById(`badge-${cal.id}`);
   const errorEl  = document.getElementById(`error-${cal.id}`);
   try {
-    const events = parseICS(await fetchWithFallback(cal.icsUrl), cal.color);
+    const events = parseICS(await fetchLocalICS(cal.icsFile), cal.color);
     events.forEach(ev => fc.addEvent(ev));
     statusEl.innerHTML = `<div class="status-dot" style="background:#2E7D52"></div> ${events.length} event${events.length !== 1 ? 's' : ''} loaded`;
     badgeEl.textContent = events.length;
@@ -601,7 +610,66 @@ async function loadCalendar(cal, fc) {
     statusEl.innerHTML = `<div class="status-dot" style="background:#c0392b"></div> Could not load calendar`;
     badgeEl.textContent = 'Error'; badgeEl.classList.add('error');
     errorEl.style.display = 'block';
-    errorEl.textContent = `Could not fetch ${cal.name} after trying multiple sources. Try refreshing, or check that the ICS URL is still published in Outlook.`;
+    errorEl.textContent = `Could not load the ${cal.name} calendar data. The sync job may not have run yet — try refreshing in a few minutes.`;
+  }
+}
+
+// ── Last synced indicator + warning banner ────────────────────
+// The sync job runs every 15 min. If data is much older than that,
+// the Action has likely stopped running (GitHub disables scheduled
+// workflows on repos with no activity for 60 days).
+const STALE_AFTER_MINS = 60;
+
+async function loadSyncStatus() {
+  const el   = document.getElementById('syncStatus');
+  const warn = document.getElementById('syncWarning');
+  if (!el) return;
+
+  try {
+    const res = await fetch(`data/manifest.json?t=${Date.now()}`, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const manifest = await res.json();
+
+    const updated = new Date(manifest.updatedAt);
+    el.textContent = `Last synced: ${updated.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}`;
+
+    if (!warn) return;
+
+    const ageMins = (Date.now() - updated.getTime()) / 60000;
+    const isStale = ageMins > STALE_AFTER_MINS;
+
+    // Which rooms failed their most recent sync?
+    const failed = Object.entries(manifest.calendars || {})
+      .filter(([, v]) => v && v.ok === false)
+      .map(([k]) => k.toUpperCase());
+
+    if (isStale) {
+      const hrs = Math.floor(ageMins / 60);
+      const age = hrs >= 24
+        ? `${Math.floor(hrs / 24)} day(s)`
+        : hrs >= 1 ? `${hrs} hour(s)` : `${Math.round(ageMins)} minutes`;
+      warn.className = 'sync-warning stale';
+      warn.innerHTML = `<strong>Calendar data may be out of date.</strong> `
+        + `These calendars last synced ${age} ago and normally refresh every 15 minutes. `
+        + `Please confirm availability with the department before relying on what's shown here.`;
+      warn.style.display = 'block';
+    } else if (failed.length) {
+      warn.className = 'sync-warning warn';
+      warn.innerHTML = `<strong>Showing last known data for ${failed.join(', ')}.</strong> `
+        + `The most recent sync for ${failed.length > 1 ? 'these rooms' : 'this room'} didn't succeed, `
+        + `so recent bookings may not appear yet.`;
+      warn.style.display = 'block';
+    } else {
+      warn.style.display = 'none';
+    }
+  } catch(e) {
+    el.textContent = '';
+    if (warn) {
+      warn.className = 'sync-warning stale';
+      warn.innerHTML = `<strong>Couldn't confirm when these calendars last updated.</strong> `
+        + `The information shown may be out of date.`;
+      warn.style.display = 'block';
+    }
   }
 }
 
@@ -990,6 +1058,8 @@ document.addEventListener('DOMContentLoaded', () => {
     calendarInstances[cal.id] = fc;
     loadCalendar(cal, fc);
   });
+
+  loadSyncStatus();
 });
 </script>
 </body>
