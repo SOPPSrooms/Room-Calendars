@@ -487,11 +487,37 @@
 
       </div><!-- /reservationForm -->
 
-      <!-- Success state -->
+      <!-- Step 1: shown before the mail client opens -->
+      <div class="form-success" id="formReady">
+        <div class="success-icon">✉</div>
+        <h3>One more step</h3>
+        <p>
+          Your email app will open with the request already filled in.
+          <strong>You still need to press Send in your email app</strong> — the request isn't
+          submitted until you do.
+        </p>
+        <button class="submit-btn" id="openMailBtn" type="button" style="margin-top:4px;">Open my email app →</button>
+        <p style="margin-top:14px;">
+          If nothing opens, email
+          <a href="mailto:sopps-rooms@northeastern.edu" style="color:var(--nu-red); text-decoration:none; font-weight:500;">sopps-rooms@northeastern.edu</a>
+          directly with your name, room, date, and times.
+        </p>
+        <button class="another-btn" id="backBtn">← Back to form</button>
+      </div>
+
+      <!-- Step 2: shown after the mail client is opened -->
       <div class="form-success" id="formSuccess">
         <div class="success-icon">✓</div>
-        <h3>Request ready to send</h3>
-        <p>Your email client has opened with the request pre-filled. Just hit Send to submit it to the SOPPS rooms team.</p>
+        <h3>Check your email app</h3>
+        <p>
+          Press Send on the message that opened to submit your request.
+          You'll get a reply confirming whether the room is available.
+        </p>
+        <p>
+          No reply within one business day? Email
+          <a href="mailto:sopps-rooms@northeastern.edu" style="color:var(--nu-red); text-decoration:none; font-weight:500;">sopps-rooms@northeastern.edu</a>
+          and we'll follow up.
+        </p>
         <button class="another-btn" id="anotherBtn">Submit another request</button>
       </div>
 
@@ -501,9 +527,11 @@
 </div><!-- /page-body -->
 
 <div class="page-note">
-  <strong>Please note:</strong> Newly approved reservations may take up to 15–20 minutes to appear on this calendar.
+  <strong>Please note:</strong> newly approved reservations may take up to 15–20 minutes to appear on this calendar.
   Availability shown here is not a confirmation — a time slot that appears open may already be reserved.
-  You will receive an email confirming whether your request has been approved.
+  You will receive an email confirming whether your request has been approved. If you do not receive a
+  response within one business day, please email
+  <a href="mailto:sopps-rooms@northeastern.edu" style="color:var(--nu-red); text-decoration:none;">sopps-rooms@northeastern.edu</a>.
 </div>
 
 <footer>Events sourced from published Outlook calendars — Northeastern University</footer>
@@ -1048,17 +1076,32 @@ document.getElementById('submitBtn').addEventListener('click', () => {
     `Sent via SOPPS Room Calendars page`,
   ].filter(l => l !== null).join('\n');
 
-  const mailto = `mailto:${RECIPIENT}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}&cc=${encodeURIComponent(email)}`;
-  window.location.href = mailto;
+  // Hold the mailto until the user has read the notice — opening it here would
+  // hand the window to their mail client before they see the instructions.
+  pendingMailto = `mailto:${RECIPIENT}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}&cc=${encodeURIComponent(email)}`;
 
-  // Show success state
   document.getElementById('reservationForm').style.display = 'none';
+  document.getElementById('formReady').style.display = 'block';
+});
+
+document.getElementById('openMailBtn').addEventListener('click', () => {
+  if (pendingMailto) window.location.href = pendingMailto;
+  document.getElementById('formReady').style.display = 'none';
   document.getElementById('formSuccess').style.display = 'block';
 });
 
+document.getElementById('backBtn').addEventListener('click', () => {
+  document.getElementById('formReady').style.display = 'none';
+  document.getElementById('reservationForm').style.display = 'block';
+});
+
+let pendingMailto = null;
+
 document.getElementById('anotherBtn').addEventListener('click', () => {
+  pendingMailto = null;
   document.getElementById('reservationForm').style.display = 'block';
   document.getElementById('formSuccess').style.display = 'none';
+  document.getElementById('formReady').style.display = 'none';
   // Clear form
   ['f-name','f-email','f-time-start','f-time-end','f-notes'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('f-date').value = '';
