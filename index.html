@@ -546,7 +546,7 @@
 // ICS feeds are served through a Cloudflare Worker that adds the CORS headers
 // Outlook doesn't send. Source: worker/sopps-ics-proxy.js
 // Replace the base URL below with your deployed Worker's address.
-const WORKER_BASE = 'https://sopps-ics-proxy.YOUR-SUBDOMAIN.workers.dev';
+const WORKER_BASE = 'https://sopps-ics-proxy.sopps-rooms.workers.dev/';
 
 const CALENDARS = [
   { id: 'R225',  name: 'R225',  color: '#C8102E',  icsUrl: `${WORKER_BASE}/r225`  },
