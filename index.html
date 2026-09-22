@@ -1057,6 +1057,8 @@ document.getElementById('submitBtn').addEventListener('click', () => {
     `STARTDT:${startISO}`,
     `ENDDT:${endISO}`,
     `ROOM:${room}`,
+    `REQEMAIL:${email}`,
+    `REQNAME:${name}`,
     `─────────────────────────`,
     `Name:   ${name}`,
     `Email:  ${email}`,
@@ -1078,7 +1080,7 @@ document.getElementById('submitBtn').addEventListener('click', () => {
 
   // Hold the mailto until the user has read the notice — opening it here would
   // hand the window to their mail client before they see the instructions.
-  pendingMailto = `mailto:${RECIPIENT}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}&cc=${encodeURIComponent(email)}`;
+  pendingMailto = `mailto:${RECIPIENT}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
   document.getElementById('reservationForm').style.display = 'none';
   document.getElementById('formReady').style.display = 'block';
