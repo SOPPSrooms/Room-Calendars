@@ -511,7 +511,7 @@
 
         <div class="form-note">
           Requests are approved in the order they arrive, so an open slot on the calendar
-          isn't held until you send your request. You'll receive an email either confirming or declining your request.
+          isn't held until you send your request. We'll email you either way.
         </div>
 
         <button class="submit-btn" id="submitBtn" type="button">Send Request →</button>
@@ -570,7 +570,8 @@
 </div><!-- /page-body -->
 
 <div class="page-note">
-  Rooms R225, R226, and R226X are located in 140 The Fenway and are available for students to reserve for studying or work. A newly approved reservation may take a few minutes to appear on this calendar.
+  Rooms R225, R226, and R226X are in 140 The Fenway and are available for studying or
+  group work. A newly approved reservation may take a few minutes to appear on this calendar.
   If you don't hear back about a request within one business day, email
   <a href="mailto:sopps-rooms@northeastern.edu" style="color:var(--nu-red); text-decoration:none;">sopps-rooms@northeastern.edu</a>.
 </div>
@@ -588,7 +589,7 @@
 // ICS feeds are served through a Cloudflare Worker that adds the CORS headers
 // Outlook doesn't send. Source: worker/sopps-ics-proxy.js
 // Replace the base URL below with your deployed Worker's address.
-const WORKER_BASE = 'https://sopps-ics-proxy.sopps-rooms.workers.dev/';
+const WORKER_BASE = 'https://sopps-ics-proxy.YOUR-SUBDOMAIN.workers.dev';
 
 const CALENDARS = [
   { id: 'R225',  name: 'R225',  color: '#C8102E',  icsUrl: `${WORKER_BASE}/r225`  },
@@ -609,6 +610,21 @@ function parseICS(icsText, calColor) {
   const events = [];
   try {
     const comp = new ICAL.Component(ICAL.parse(icsText));
+
+    // Exchange publishes Windows timezone names ("Greenwich Standard Time",
+    // "Eastern Standard Time") rather than IANA ones. ICAL.js can't resolve
+    // those on its own and silently falls back to floating time, which renders
+    // the raw clock number and shifts events by the UTC offset. The feed does
+    // include full VTIMEZONE definitions, so register them before reading events.
+    comp.getAllSubcomponents('vtimezone').forEach(vtz => {
+      try {
+        const tz = new ICAL.Timezone(vtz);
+        if (tz.tzid && !ICAL.TimezoneService.has(tz.tzid)) {
+          ICAL.TimezoneService.register(tz.tzid, tz);
+        }
+      } catch(e) { console.warn('Could not register timezone', e); }
+    });
+
     comp.getAllSubcomponents('vevent').forEach(vevent => {
       const ev = new ICAL.Event(vevent);
       try {
