@@ -511,7 +511,7 @@
 
         <div class="form-note">
           Requests are approved in the order they arrive, so an open slot on the calendar
-          isn't held until you send your request. We'll email you either way.
+          isn't held until you send your request. You'll receive an email either confirming or declining your request.
         </div>
 
         <button class="submit-btn" id="submitBtn" type="button">Send Request →</button>
@@ -537,7 +537,7 @@
           <p class="fallback-head">Nothing opened?</p>
           <p>
             Some computers aren't set up to open email from a web page. If that happens,
-            copy the request below and send it yourself to
+            copy the request below and send it to
             <strong>sopps-rooms@northeastern.edu</strong>.
           </p>
           <button class="copy-btn" id="copyBtn" type="button">Copy my request</button>
@@ -589,7 +589,7 @@
 // ICS feeds are served through a Cloudflare Worker that adds the CORS headers
 // Outlook doesn't send. Source: worker/sopps-ics-proxy.js
 // Replace the base URL below with your deployed Worker's address.
-const WORKER_BASE = 'https://sopps-ics-proxy.YOUR-SUBDOMAIN.workers.dev';
+const WORKER_BASE = 'https://sopps-ics-proxy.sopps-rooms.workers.dev/';
 
 const CALENDARS = [
   { id: 'R225',  name: 'R225',  color: '#C8102E',  icsUrl: `${WORKER_BASE}/r225`  },
