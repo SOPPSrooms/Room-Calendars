@@ -67,31 +67,27 @@
 
   /* ── Tabs ── */
   .tab-bar {
-    display: flex; gap: 6px;
-    border-bottom: 2px solid var(--border);
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 14px;
   }
   .tab-btn {
-    display: flex; align-items: center; gap: 8px;
-    padding: 10px 22px;
-    border: none; background: transparent;
-    font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500;
+    display: flex; align-items: center; gap: 9px;
+    padding: 11px 20px;
+    background: #fff;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600;
     color: var(--muted); cursor: pointer;
-    border-bottom: 3px solid transparent; margin-bottom: -2px;
-    border-radius: 6px 6px 0 0;
-    transition: color 0.15s, border-color 0.15s, background 0.15s;
+    transition: border-color 0.15s, color 0.15s, background 0.15s, box-shadow 0.15s;
   }
-  .tab-btn:hover { background: #f0f0ee; color: var(--text); }
-  .tab-btn.active { color: var(--text); font-weight: 600; }
-  .tab-btn[data-cal="R225"].active  { border-bottom-color: var(--r225-color); }
-  .tab-btn[data-cal="R226"].active  { border-bottom-color: var(--r226-color); }
-  .tab-btn[data-cal="R226X"].active { border-bottom-color: var(--r226x-color); }
+  .tab-btn:hover { border-color: var(--muted); color: var(--text); }
+  .tab-btn:focus-visible { outline: 2px solid var(--nu-red); outline-offset: 2px; }
+  .tab-btn.active { color: #fff; }
+  .tab-btn[data-cal="R225"].active  { background: var(--r225-color);  border-color: var(--r225-color); }
+  .tab-btn[data-cal="R226"].active  { background: var(--r226-color);  border-color: var(--r226-color); }
+  .tab-btn[data-cal="R226X"].active { background: var(--r226x-color); border-color: var(--r226x-color); }
+  .tab-btn.active .tab-dot { background: rgba(255,255,255,0.9) !important; }
   .tab-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-  .tab-badge {
-    font-size: 10px; font-weight: 600; padding: 1px 6px;
-    border-radius: 10px; background: var(--border); color: var(--muted);
-  }
-  .tab-badge.ready { background: #e6f4ec; color: #2E7D52; }
-  .tab-badge.error { background: #fdecea; color: #c0392b; }
 
   /* ── Calendar panels ── */
   .tab-panel {
@@ -329,6 +325,43 @@
   .time-option.selected {
     background: #fff0f2; color: var(--nu-red); font-weight: 600;
   }
+  .form-note {
+    font-size: 12.5px; line-height: 1.55; color: var(--muted);
+    background: #f7f7f5; border-left: 3px solid var(--border);
+    padding: 10px 12px; border-radius: 0 5px 5px 0;
+    margin-bottom: 14px;
+  }
+
+  .fallback-box {
+    margin-top: 22px; padding-top: 18px;
+    border-top: 1px solid var(--border);
+    text-align: left;
+  }
+  .fallback-head {
+    font-weight: 600; color: var(--text);
+    margin: 0 0 6px; font-size: 14px;
+  }
+  .fallback-box p { font-size: 13px; line-height: 1.5; color: var(--muted); margin: 0 0 10px; }
+  .copy-btn {
+    font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+    padding: 8px 14px; border-radius: 6px; cursor: pointer;
+    background: #fff; color: var(--text); border: 1.5px solid var(--border);
+    transition: border-color 0.15s;
+  }
+  .copy-btn:hover { border-color: var(--muted); }
+  .copy-status { font-size: 12px; color: #2E7D52; margin-left: 10px; font-weight: 500; }
+  .fallback-details { margin-top: 12px; }
+  .fallback-details summary {
+    font-size: 12.5px; color: var(--muted); cursor: pointer;
+    padding: 2px 0;
+  }
+  .fallback-details pre {
+    margin-top: 8px; padding: 10px;
+    background: #f7f7f5; border: 1px solid var(--border); border-radius: 6px;
+    font-size: 11.5px; line-height: 1.45; white-space: pre-wrap;
+    max-height: 200px; overflow-y: auto; color: var(--text);
+  }
+
   .page-note {
     max-width: 1340px;
     margin: 0 auto 8px;
@@ -378,15 +411,15 @@
     <div class="tab-bar" role="tablist">
       <button class="tab-btn active" data-cal="R225" role="tab" aria-selected="true" aria-controls="panel-R225">
         <div class="tab-dot" style="background:var(--r225-color)"></div>
-        R225 <span class="tab-badge" id="badge-R225">Loading…</span>
+        R225
       </button>
       <button class="tab-btn" data-cal="R226" role="tab" aria-selected="false" aria-controls="panel-R226">
         <div class="tab-dot" style="background:var(--r226-color)"></div>
-        R226 <span class="tab-badge" id="badge-R226">Loading…</span>
+        R226
       </button>
       <button class="tab-btn" data-cal="R226X" role="tab" aria-selected="false" aria-controls="panel-R226X">
         <div class="tab-dot" style="background:var(--r226x-color)"></div>
-        R226X <span class="tab-badge" id="badge-R226X">Loading…</span>
+        R226X
       </button>
     </div>
 
@@ -476,6 +509,11 @@
           <textarea id="f-notes" placeholder="Purpose, number of attendees, any special requirements…"></textarea>
         </div>
 
+        <div class="form-note">
+          Requests are approved in the order they arrive, so an open slot on the calendar
+          isn't held until you send your request. We'll email you either way.
+        </div>
+
         <button class="submit-btn" id="submitBtn" type="button">Send Request →</button>
 
         <p style="font-size:12px; color:var(--muted); margin-top:14px; line-height:1.6; text-align:center;">
@@ -487,36 +525,43 @@
 
       <!-- Step 1: shown before the mail client opens -->
       <div class="form-success" id="formReady">
-        <div class="success-icon">✉</div>
-        <h3>One more step</h3>
+        <h3>Almost done</h3>
         <p>
-          Your email app will open with the request already filled in.
-          <strong>You still need to press Send in your email app</strong> — the request isn't
-          submitted until you do.
+          Your request isn't sent yet. Clicking below opens your email program with the
+          request already written for you — then press Send there.
         </p>
-        <button class="submit-btn" id="openMailBtn" type="button" style="margin-top:4px;">Open my email app →</button>
-        <p style="margin-top:14px;">
-          If nothing opens, email
-          <a href="mailto:sopps-rooms@northeastern.edu" style="color:var(--nu-red); text-decoration:none; font-weight:500;">sopps-rooms@northeastern.edu</a>
-          directly with your name, room, date, and times.
-        </p>
-        <button class="another-btn" id="backBtn">← Back to form</button>
+        <button class="submit-btn" id="openMailBtn" type="button">Open my email and send</button>
+        <button class="another-btn" id="backBtn">Back to the form</button>
+
+        <div class="fallback-box">
+          <p class="fallback-head">Nothing opened?</p>
+          <p>
+            Some computers aren't set up to open email from a web page. If that happens,
+            copy the request below and send it yourself to
+            <strong>sopps-rooms@northeastern.edu</strong>.
+          </p>
+          <button class="copy-btn" id="copyBtn" type="button">Copy my request</button>
+          <span class="copy-status" id="copyStatus"></span>
+          <details class="fallback-details">
+            <summary>Show the request text</summary>
+            <pre id="requestPreview"></pre>
+          </details>
+        </div>
       </div>
 
       <!-- Step 2: shown after the mail client is opened -->
       <div class="form-success" id="formSuccess">
         <div class="success-icon">✓</div>
-        <h3>Check your email app</h3>
+        <h3>Press Send in your email</h3>
         <p>
-          Press Send on the message that opened to submit your request.
-          You'll get a reply confirming whether the room is available.
+          Your request reaches us once you send that message. You'll get a reply
+          confirming whether the room is free.
         </p>
         <p>
-          No reply within one business day? Email
-          <a href="mailto:sopps-rooms@northeastern.edu" style="color:var(--nu-red); text-decoration:none; font-weight:500;">sopps-rooms@northeastern.edu</a>
-          and we'll follow up.
+          Nothing arrived within a business day? Email
+          <a href="mailto:sopps-rooms@northeastern.edu" style="color:var(--nu-red); text-decoration:none; font-weight:500;">sopps-rooms@northeastern.edu</a>.
         </p>
-        <button class="another-btn" id="anotherBtn">Submit another request</button>
+        <button class="another-btn" id="anotherBtn">Book another room</button>
       </div>
 
     </div><!-- /sidebar-body -->
@@ -525,11 +570,9 @@
 </div><!-- /page-body -->
 
 <div class="page-note">
-  <strong>Please note:</strong> this calendar shows current bookings, but a newly approved
-  reservation may take a few minutes to appear. Availability shown here is not a confirmation —
-  a time slot that appears open may already be reserved. You will receive an email confirming
-  whether your request has been approved. If you do not receive a response within one business
-  day, please email
+  Rooms R225, R226, and R226X are in 140 The Fenway and are available for studying or
+  group work. A newly approved reservation may take a few minutes to appear on this calendar.
+  If you don't hear back about a request within one business day, email
   <a href="mailto:sopps-rooms@northeastern.edu" style="color:var(--nu-red); text-decoration:none;">sopps-rooms@northeastern.edu</a>.
 </div>
 
@@ -546,7 +589,7 @@
 // ICS feeds are served through a Cloudflare Worker that adds the CORS headers
 // Outlook doesn't send. Source: worker/sopps-ics-proxy.js
 // Replace the base URL below with your deployed Worker's address.
-const WORKER_BASE = 'https://sopps-ics-proxy.sopps-rooms.workers.dev';
+const WORKER_BASE = 'https://sopps-ics-proxy.YOUR-SUBDOMAIN.workers.dev';
 
 const CALENDARS = [
   { id: 'R225',  name: 'R225',  color: '#C8102E',  icsUrl: `${WORKER_BASE}/r225`  },
@@ -641,17 +684,13 @@ function makeCalendar(cal) {
 
 async function loadCalendar(cal, fc) {
   const statusEl = document.getElementById(`status-${cal.id}`);
-  const badgeEl  = document.getElementById(`badge-${cal.id}`);
   const errorEl  = document.getElementById(`error-${cal.id}`);
   try {
     const events = parseICS(await fetchICS(cal.icsUrl), cal.color);
     events.forEach(ev => fc.addEvent(ev));
-    statusEl.innerHTML = `<div class="status-dot" style="background:#2E7D52"></div> ${events.length} event${events.length !== 1 ? 's' : ''} loaded`;
-    badgeEl.textContent = events.length;
-    badgeEl.classList.add('ready');
+    statusEl.style.display = 'none';
   } catch(err) {
     statusEl.innerHTML = `<div class="status-dot" style="background:#c0392b"></div> Could not load calendar`;
-    badgeEl.textContent = 'Error'; badgeEl.classList.add('error');
     errorEl.style.display = 'block';
     errorEl.textContent = `Could not load the ${cal.name} calendar. Try refreshing the page.`;
     noteLoadFailure(cal.name);
@@ -1037,9 +1076,34 @@ document.getElementById('submitBtn').addEventListener('click', () => {
   // Hold the mailto until the user has read the notice — opening it here would
   // hand the window to their mail client before they see the instructions.
   pendingMailto = `mailto:${RECIPIENT}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  pendingSubject = subject;
+  pendingBody = body;
+
+  document.getElementById('requestPreview').textContent = `Subject: ${subject}\n\n${body}`;
+  document.getElementById('copyStatus').textContent = '';
 
   document.getElementById('reservationForm').style.display = 'none';
   document.getElementById('formReady').style.display = 'block';
+});
+
+document.getElementById('copyBtn').addEventListener('click', async () => {
+  const status = document.getElementById('copyStatus');
+  const text = `Subject: ${pendingSubject}\n\n${pendingBody}`;
+  try {
+    await navigator.clipboard.writeText(text);
+    status.textContent = 'Copied';
+  } catch (e) {
+    // Clipboard API needs a secure context and permission; fall back to selecting
+    // the text so the person can copy it manually.
+    const pre = document.getElementById('requestPreview');
+    pre.closest('details').open = true;
+    const range = document.createRange();
+    range.selectNodeContents(pre);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    status.textContent = 'Selected — press Ctrl+C (or Cmd+C) to copy';
+  }
 });
 
 document.getElementById('openMailBtn').addEventListener('click', () => {
@@ -1054,6 +1118,8 @@ document.getElementById('backBtn').addEventListener('click', () => {
 });
 
 let pendingMailto = null;
+let pendingSubject = '';
+let pendingBody = '';
 
 document.getElementById('anotherBtn').addEventListener('click', () => {
   pendingMailto = null;
