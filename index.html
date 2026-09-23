@@ -570,8 +570,7 @@
 </div><!-- /page-body -->
 
 <div class="page-note">
-  Rooms R225, R226, and R226X are in 140 The Fenway and are available for studying or
-  group work. A newly approved reservation may take a few minutes to appear on this calendar.
+  Rooms R225, R226, and R226X are located in 140 The Fenway and are available for students to reserve for studying or work. A newly approved reservation may take a few minutes to appear on this calendar.
   If you don't hear back about a request within one business day, email
   <a href="mailto:sopps-rooms@northeastern.edu" style="color:var(--nu-red); text-decoration:none;">sopps-rooms@northeastern.edu</a>.
 </div>
@@ -589,7 +588,7 @@
 // ICS feeds are served through a Cloudflare Worker that adds the CORS headers
 // Outlook doesn't send. Source: worker/sopps-ics-proxy.js
 // Replace the base URL below with your deployed Worker's address.
-const WORKER_BASE = 'https://sopps-ics-proxy.YOUR-SUBDOMAIN.workers.dev';
+const WORKER_BASE = 'https://sopps-ics-proxy.sopps-rooms.workers.dev/';
 
 const CALENDARS = [
   { id: 'R225',  name: 'R225',  color: '#C8102E',  icsUrl: `${WORKER_BASE}/r225`  },
