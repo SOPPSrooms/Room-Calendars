@@ -674,7 +674,9 @@ function makeCalendar(cal) {
     initialView: 'dayGridMonth',
     headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,listMonth' },
     buttonText: { today: 'Today', month: 'Month', week: 'Week', list: 'List' },
-    height: 'auto', dayMaxEvents: 4, nowIndicator: true,
+       height: 'auto', dayMaxEvents: 4, nowIndicator: true,
+    weekends: false,
+    slotMinTime: '08:00:00', slotMaxTime: '20:00:00',
     eventMouseEnter(info) {
       ttTitle.textContent = info.event.title;
       ttCal.innerHTML = `<span class="tt-dot" style="background:${cal.color}"></span>${cal.name}`;
@@ -888,9 +890,9 @@ function parsePartialTime(str) {
   return h * 60 + m;
 }
 
-// Time range: 8:00 AM (480 mins) to 6:00 PM (1080 mins), inclusive
+// Time range: 8:00 AM (480 mins) to 8:00 PM (1200 mins), inclusive
 const TIME_MIN_MINS = 8 * 60;   // 480
-const TIME_MAX_MINS = 18 * 60;  // 1080
+const TIME_MAX_MINS = 20 * 60;  // 1200
 
 function buildTimePicker(inputId, dropdownId) {
   const input = document.getElementById(inputId);
