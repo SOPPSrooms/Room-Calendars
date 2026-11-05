@@ -447,13 +447,9 @@
         <div class="tab-dot" style="background:var(--r226-color)"></div>
         R226
       </button>
-      <button class="tab-btn" data-cal="R226X" role="tab" aria-selected="false" aria-controls="panel-R226X">
-        <div class="tab-dot" style="background:var(--r226x-color)"></div>
-        R226X
-      </button>
       <button class="tab-btn tab-soon" data-cal="DESK" role="tab" aria-selected="false" aria-controls="panel-DESK">
         <div class="tab-dot" style="background:#9A9A95"></div>
-        Study Desks <span class="soon-flag">Coming soon</span>
+        x120 <span class="soon-flag">Coming soon</span>
       </button>
     </div>
 
@@ -467,14 +463,9 @@
       <div class="error-notice" id="error-R226"></div>
       <div id="cal-R226"></div>
     </div>
-    <div id="panel-R226X" class="tab-panel" role="tabpanel">
-      <div class="panel-status" id="status-R226X"><div class="spinner"></div> Loading R226X…</div>
-      <div class="error-notice" id="error-R226X"></div>
-      <div id="cal-R226X"></div>
-    </div>
         <div id="panel-DESK" class="tab-panel" role="tabpanel">
       <div class="soon-panel">
-        <h3>Study desks — coming soon</h3>
+        <h3>x120 — coming soon</h3>
         <p>
           We're opening a shared workspace with multiple desks for individual study and quiet work.
           Unlike the rooms above, you'll reserve a time rather than a specific desk, and several
@@ -532,7 +523,6 @@
               <option value="">Select a room…</option>
               <option value="R225">R225</option>
               <option value="R226">R226</option>
-              <option value="R226X">R226X</option>
             </select>
           </div>
           <div class="field-error" id="err-room">Please select a room.</div>
@@ -629,7 +619,7 @@
 </div><!-- /page-body -->
 
 <div class="page-note">
-  Rooms R225, R226, and R226X are located in 140 The Fenway and are available for student use for studying or
+  Rooms R225, R226, and x120 are located in 140 The Fenway and are available for student use for studying or
   work. A newly approved reservation may take a few minutes to appear on this calendar.
   If you don't hear back about a request within one business day, email
   <a href="mailto:sopps-rooms@northeastern.edu" style="color:var(--nu-red); text-decoration:none;">sopps-rooms@northeastern.edu</a>.
@@ -652,8 +642,7 @@ const WORKER_BASE = 'https://sopps-ics-proxy.sopps-rooms.workers.dev/';
 
 const CALENDARS = [
   { id: 'R225',  name: 'R225',  color: '#C8102E',  icsUrl: `${WORKER_BASE}/r225`  },
-  { id: 'R226',  name: 'R226',  color: '#1A6BB5',  icsUrl: `${WORKER_BASE}/r226`  },
-  { id: 'R226X', name: 'R226X', color: '#2E7D52',  icsUrl: `${WORKER_BASE}/r226x` }
+  { id: 'R226',  name: 'R226',  color: '#1A6BB5',  icsUrl: `${WORKER_BASE}/r226`  }
 ];
 
 async function fetchICS(url) {
