@@ -324,7 +324,37 @@
   .time-option:hover, .time-option.highlighted { background: #f5f5f3; }
   .time-option.selected {
     background: #fff0f2; color: var(--nu-red); font-weight: 600;
+  }  .tab-btn.tab-soon { border-style: dashed; }
+  .tab-btn.tab-soon.active { background: #6B6B6B; border-color: #6B6B6B; border-style: solid; }
+  .soon-flag {
+    font-size: 10px; font-weight: 600; letter-spacing: .03em;
+    padding: 2px 7px; border-radius: 10px;
+    background: var(--border); color: var(--muted); text-transform: uppercase;
   }
+  .tab-btn.active .soon-flag { background: rgba(255,255,255,.22); color: #fff; }
+
+  .soon-panel { padding: 8px 2px 4px; max-width: 640px; }
+  .soon-panel h3 { font-size: 17px; font-weight: 600; margin-bottom: 10px; }
+  .soon-panel p { font-size: 13.5px; line-height: 1.6; color: var(--muted); margin-bottom: 12px; }
+  .soon-panel a { color: var(--nu-red); text-decoration: none; font-weight: 500; }
+  .soon-preview {
+    border: 1px solid var(--border); border-radius: 8px;
+    overflow: hidden; margin: 16px 0 8px; opacity: .85;
+  }
+  .soon-row {
+    display: grid; grid-template-columns: 82px 1fr 104px;
+    align-items: center; gap: 12px; padding: 9px 12px;
+    border-bottom: 1px solid var(--border); font-size: 12.5px;
+  }
+  .soon-row:last-child { border-bottom: none; }
+  .soon-row > span:first-child { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .soon-bar { height: 20px; border-radius: 4px; background: #f0f0ee; overflow: hidden; }
+  .soon-bar i { display: block; height: 100%; background: #B8860B; opacity: .8; }
+  .soon-bar i.is-full { background: #C0392B; }
+  .soon-free { color: #2E7D52; font-weight: 600; text-align: right; }
+  .soon-full { color: #C0392B; font-weight: 600; text-align: right; }
+  .soon-none { color: var(--muted); text-align: right; }
+  .soon-cap { font-size: 11.5px !important; font-style: italic; }
   .form-note {
     font-size: 12.5px; line-height: 1.55; color: var(--muted);
     background: #f7f7f5; border-left: 3px solid var(--border);
@@ -421,6 +451,10 @@
         <div class="tab-dot" style="background:var(--r226x-color)"></div>
         R226X
       </button>
+      <button class="tab-btn tab-soon" data-cal="DESK" role="tab" aria-selected="false" aria-controls="panel-DESK">
+        <div class="tab-dot" style="background:#9A9A95"></div>
+        Study Desks <span class="soon-flag">Coming soon</span>
+      </button>
     </div>
 
     <div id="panel-R225" class="tab-panel active" role="tabpanel">
@@ -437,6 +471,31 @@
       <div class="panel-status" id="status-R226X"><div class="spinner"></div> Loading R226X…</div>
       <div class="error-notice" id="error-R226X"></div>
       <div id="cal-R226X"></div>
+    </div>
+        <div id="panel-DESK" class="tab-panel" role="tabpanel">
+      <div class="soon-panel">
+        <h3>Study desks — coming soon</h3>
+        <p>
+          We're opening a shared workspace with multiple desks for individual study and quiet work.
+          Unlike the rooms above, you'll reserve a time rather than a specific desk, and several
+          people can book the same time until all desks are taken.
+        </p>
+        <p>
+          The calendar will show how many desks are free in each time slot, so you can see at a
+          glance where there's space.
+        </p>
+        <div class="soon-preview">
+          <div class="soon-row"><span>9:00 AM</span><div class="soon-bar"><i style="width:33%"></i></div><span class="soon-free">4 of 6 free</span></div>
+          <div class="soon-row"><span>10:00 AM</span><div class="soon-bar"><i style="width:50%"></i></div><span class="soon-free">3 of 6 free</span></div>
+          <div class="soon-row"><span>2:00 PM</span><div class="soon-bar"><i style="width:100%" class="is-full"></i></div><span class="soon-full">Full</span></div>
+          <div class="soon-row"><span>4:00 PM</span><div class="soon-bar"></div><span class="soon-none">All 6 free</span></div>
+        </div>
+        <p class="soon-cap">Example only — not live, and desk count not final.</p>
+        <p>
+          Questions about this space? Email
+          <a href="mailto:sopps-rooms@northeastern.edu">sopps-rooms@northeastern.edu</a>.
+        </p>
+      </div>
     </div>
 
   </div><!-- /calendar-col -->
